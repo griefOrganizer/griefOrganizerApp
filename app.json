@@ -9,6 +9,7 @@
     "ios": {
       "supportsTablet": true
     },
+    "scheme": "grieforganizer",
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -22,7 +23,10 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-router",
+      "expo-status-bar",
+      "expo-font"
     ]
   }
 }
