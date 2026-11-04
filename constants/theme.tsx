@@ -16,6 +16,7 @@ export const colors = {
   primarySoft: '#EAF2FB',  // highlighted stat tile background
   primaryMuted: '#B4C6E0', // avatar tile background
   primaryBorder: '#C9D8EC',// border on highlighted tile
+  tabInactive: 'rgba(47, 74, 115, 0.6)', // unselected tab bar icons (faded primaryDark)
 
   success: '#2F7A55',
 }
