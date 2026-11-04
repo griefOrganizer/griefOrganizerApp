@@ -1,19 +1,20 @@
-import { useRouter, type Href } from 'expo-router'
-import { Pressable, StyleSheet, Text } from 'react-native'
 import { colors, radius, space, type } from '../constants/theme'
+import { Pressable, StyleSheet, Text } from 'react-native'
+import { useRouter, type Href } from 'expo-router'
 
-type CardProps = {
+type TextCardProps = {
     text: string;
-    subtext: string;
-    href ? : Href;
+    subtext?: string;
+    href?: Href;
 };
 
-export const Card = ({ text, subtext, href }: CardProps) => {
+export const TextCard = ({ text, subtext, href }: TextCardProps) => {
+    // 'icon: IconComponent' renames the prop
     const router = useRouter()
 
     return (
         <Pressable
-            style={({ pressed }) => [styles.card, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [styles.textCard, pressed && { opacity: 0.7 }]}
             onPress={() => href && router.push(href)}
             accessibilityRole="button" >
                 <Text style={type.label}>{text}</Text>
@@ -23,8 +24,8 @@ export const Card = ({ text, subtext, href }: CardProps) => {
 }
 
 export const styles = StyleSheet.create({
-    card: {
+    textCard: {
         backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1,
-        borderRadius: radius.card, padding: 20, gap: space.xs,
-    }
+        borderRadius: radius.card, padding: 20, gap: space.sm,
+    },
 })

@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text, View, Linking, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { colors, radius, space, type } from '../constants/theme'
-import { Card } from '../components/Card'
+import { StyleSheet, Text, View} from 'react-native'
+import { TextCard } from '../components/TextCard'
+import { space, type } from '../constants/theme'
 
 export default function Index() {
   return (
@@ -11,12 +11,12 @@ export default function Index() {
           <Text style={type.body}>Losing someone brings a lot of paperwork. We'll take it one small step at a time. Where are you right now?</Text>
         </View>
         
-        <View>
-          <Card
+        <View style={styles.cards}>
+          <TextCard
             text="My loved one has passed"
             subtext="We'll show you what to do first, in plain steps."
             href="/sympathy"/>
-          <Card
+          <TextCard
             text="I'm preparing for a loss"
             subtext="Get organized ahead of time and share the load."/>
         </View>
@@ -29,13 +29,19 @@ export default function Index() {
 }
 
 export const styles = StyleSheet.create({
-    screen: { flex: 1, padding: space.lg, gap: space.md },
-    card: {
-        backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1,
-        borderRadius: radius.card, padding: 20, gap: space.xs,
+    screen: {
+      flex: 1,
+      padding: space.lg,
+      gap: space.lg,
+      paddingTop: (space.lg * 2),       // TODO: standardize this to avoid iPhone notch
+    },
+    cards: {
+      flex: 1,
+      gap: space.md,
+      flexDirection: 'column',
     },
     bottomText:  {
-        marginTop: 'auto', // Pushes this view to the bottom of the flex layout
-        padding: 15,
+      marginTop: 'auto',                // Pushes this view to the bottom of the flex layout
+      padding: 15,
     }
 })
