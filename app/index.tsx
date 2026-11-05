@@ -3,6 +3,7 @@ import { StyleSheet, Text, View} from 'react-native'
 import { TextCard } from '../components/TextCard'
 import { space, type } from '../constants/theme'
 
+// to test supabase connection, change /sympathy to /test
 export default function Index() {
   return (
       <SafeAreaView style={styles.screen}>

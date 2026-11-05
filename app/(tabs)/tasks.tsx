@@ -1,12 +1,13 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View, FlatList } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { type Href } from 'expo-router'
 import { colors, space, type } from '../../constants/theme'
 import { StatTile } from '../../components/StatTile'
 import { ListCard } from '../../components/ListCard'
+import { useState, useEffect } from 'react';
+import { type Href } from 'expo-router'
 
 type Task = {
-  id: string
+  id: string                       // unique
   title: string
   duration: string
   href?: Href                      // add once each task gets its own screen (optional now)
@@ -17,6 +18,9 @@ const READY_TASKS: Task[] = [
   { id: 'bank-contact', title: 'Notify bank account primary contact', duration: '2 hours' },
   { id: 'email', title: 'Close personal email account', duration: '10 minutes' },
   { id: 'streaming', title: 'Cancel streaming subscriptions', duration: '15 minutes' },
+  { id: 'test1', title: 'Hehehe look at the duration v', duration: '6 7' },
+  { id: 'test2', title: 'This is a task', duration: '69 minutes' },
+  { id: 'test3', title: 'Tasks need to be completed', duration: '420 minutes' },
 ]
 
 const WAITING_COUNT = 7
@@ -44,6 +48,14 @@ export default function Tasks() {
 
         <View style={styles.section}>
           <Text style={type.section} accessibilityRole="header">Ready when you are</Text>
+
+          {/* <View>
+            <FlatList
+                data={READY_TASKS}
+                renderItem={({ item }) => <ListCard title={item.title} subtitle={item.duration} href={item.href} />}
+                keyExtractor={item => item.id}
+            />
+          </View> */}
 
           {readyCount > 0 ? (
             READY_TASKS.map((task) => (
@@ -75,7 +87,7 @@ const styles = StyleSheet.create({
   stats: {
     flexDirection: 'row',
     gap: space.md,
-    paddingHorizontal: space.sm,   // tiles slightly pushed in from the cards, like tfigma
+    paddingHorizontal: space.sm,   // tiles slightly pushed in from the cards, like figma
   },
   section: {
     gap: space.md,

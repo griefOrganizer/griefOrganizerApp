@@ -28,7 +28,7 @@ export default function TakeTime() {
             </View>
 
             <View style={styles.bottom}>
-                <Button text="See My Task List" href="/tabs/tasks"/>
+                <Button text="See My Task List" href="/tasks"/>
             </View>
         </SafeAreaView>
     )
