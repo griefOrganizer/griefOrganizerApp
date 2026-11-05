@@ -1,9 +1,9 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { type Href } from 'expo-router'
-import { colors, space, type } from '../constants/theme'
-import { StatTile } from '../components/StatTile'
-import { ListCard } from '../components/ListCard'
+import { colors, space, type } from '../../constants/theme'
+import { StatTile } from '../../components/StatTile'
+import { ListCard } from '../../components/ListCard'
 
 type Task = {
   id: string
@@ -18,6 +18,7 @@ const READY_TASKS: Task[] = [
   { id: 'email', title: 'Close personal email account', duration: '10 minutes' },
   { id: 'streaming', title: 'Cancel streaming subscriptions', duration: '15 minutes' },
 ]
+
 const WAITING_COUNT = 7
 const DONE_COUNT = 13
 

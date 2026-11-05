@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { colors, space, type } from '../constants/theme'
+import { colors, space, type } from '../../constants/theme'
 
 // placeholder for "Add your own details" screen
 export default function Profile() {
