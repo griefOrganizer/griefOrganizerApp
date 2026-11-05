@@ -3,7 +3,7 @@ import { StyleSheet, Text, View} from 'react-native'
 import { TextCard } from '../components/TextCard'
 import { space, type } from '../constants/theme'
 
-// to test supabase connection, change /sympathy to /test
+// to test supabase connection, change /sympathy to /test or /fetchData
 export default function Index() {
   return (
       <SafeAreaView style={styles.screen}>
@@ -16,7 +16,7 @@ export default function Index() {
           <TextCard
             text="My loved one has passed"
             subtext="We'll show you what to do first, in plain steps."
-            href="/sympathy"/>
+            href="/tasks"/>
           <TextCard
             text="I'm preparing for a loss"
             subtext="Get organized ahead of time and share the load."/>
