@@ -3,34 +3,34 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { StyleSheet, Text, View } from 'react-native'
 import { BackArrow } from '../components/BackArrow'
 import { Button } from '../components/Button'
-import { useRouter } from 'expo-router'
 import { Clock } from 'lucide-react-native'
 import { Icon } from '../components/Icon'
+import { useRouter } from 'expo-router'
 
 
 export default function TakeTime() {
-  const router = useRouter()
-  const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'))
+    const router = useRouter()
+    const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'))
 
-  return (
-    <SafeAreaView style={styles.screen}>
-        <BackArrow />
+    return (
+        <SafeAreaView style={styles.screen}>
+            <BackArrow />
 
-        <View style={styles.intro}>
-        <Text style={type.title}>Today, take your time</Text>
-        <Text style={type.body}>
-            Your first tasks are ready. Nothing urgent is waiting on you.
-        </Text>
-        </View>
+            <View style={styles.intro}>
+            <Text style={type.title}>Today, take your time</Text>
+            <Text style={type.body}>
+                Your first tasks are ready. Nothing urgent is waiting on you.
+            </Text>
+            </View>
 
-        <View style={styles.middle}>
-            <Icon icon={Clock} size={radius.lgIcon} color={colors.text}/>
-        </View>
+            <View style={styles.middle}>
+                <Icon icon={Clock} size={radius.lgIcon} color={colors.text}/>
+            </View>
 
-        <View style={styles.bottom}>
-            <Button text="See My Task List"/>
-        </View>
-    </SafeAreaView>
+            <View style={styles.bottom}>
+                <Button text="See My Task List" href="/tasks"/>
+            </View>
+        </SafeAreaView>
     )
 }
 
