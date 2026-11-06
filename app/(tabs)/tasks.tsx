@@ -12,11 +12,13 @@ const DONE_COUNT = 13
 export default function Tasks() {
   const [readyTasks, setReadyTasks] = useState<Task[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getTasks()
       .then(setReadyTasks)
       .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false))   // runs after success or failure
   }, [])
 
   const readyCount = readyTasks.length
@@ -50,12 +52,14 @@ export default function Tasks() {
             />
           </View> */}
 
-          {readyCount > 0 ? (
+          {loading ? (
+            <Text style={type.body}>Loading...</Text>
+          ) : readyCount > 0 ? (
             readyTasks.map((task) => (
               <ListCard key={task.id} title={task.title} subtitle={task.duration} href={task.href} />
             ))
           ) : (
-            <Text style={type.body}>Nothing to do right now. We'll let you know when something's ready.</Text>
+            !error && <Text style={type.body}>Nothing to do right now. We'll let you know when something's ready.</Text>
           )}
         </View>
       </ScrollView>

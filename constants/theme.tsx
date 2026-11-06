@@ -19,6 +19,7 @@ export const colors = {
   tabInactive: 'rgba(47, 74, 115, 0.6)', // unselected tab bar icons (faded primaryDark)
 
   success: '#2F7A55',
+  error: '#B3261E',
 }
 
 export const fonts = {
