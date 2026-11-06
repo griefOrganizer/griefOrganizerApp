@@ -4,26 +4,26 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRef, useState, type ComponentRef } from 'react'
 import { TextBox } from '../components/TextBox'
 import { useRouter } from 'expo-router'
-import { supabase } from '../lib/supabase'
 import {
     ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable,
-    ScrollView, StyleSheet, Text, TextInput, View,
+    ScrollView, StyleSheet, Text, TextInput, View, Modal, Button
 } from 'react-native'
 
 
 export default function Signin() {
     const router = useRouter()
     const lastNameRef = useRef<ComponentRef<typeof TextInput>>(null)
-    const DOBref = useRef<ComponentRef<typeof TextInput>>(null)
+    const birthdayRef = useRef<ComponentRef<typeof TextInput>>(null)
+    const tempDate = new Date(2000, 0, 1)
 
 
     // const [var, updateFunction()] = useState('initial value')
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
-    const [DOB, setDOB] = useState<Date>(new Date())
+    const [birthday, setBirthday] = useState<Date | null>(null)
     const [showDatePicker, setShowDatePicker] = useState(false)
     const [nameError, setNameError] = useState('')
-    const [DOBerror, setDOBerror] = useState('')
+    const [birthdayError, setBirthdayError] = useState('')
     const [formError, setFormError] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -55,9 +55,9 @@ export default function Signin() {
                     autoCorrect={false}
                     autoComplete="name"
                     // textContentType="emailAddress"
-                    returnKeyType="next"
+                    returnKeyType="done"
                     onSubmitEditing={() => (lastNameRef.current as any)?.focus()}
-                    submitBehavior="submit"
+                    submitBehavior="newline"
                 />
 
                 <TextBox
@@ -71,34 +71,54 @@ export default function Signin() {
                     autoCorrect={false}
                     autoComplete="name"
                     // textContentType="emailAddress"
-                    returnKeyType="next"
-                    onSubmitEditing={() => (DOBref.current as any)?.focus()}
-                    submitBehavior="submit"
+                    returnKeyType="done"
+                    onSubmitEditing={() => (birthdayRef.current as any)?.focus()}
+                    submitBehavior="newline"
                 />
 
                 <Pressable onPress={() => setShowDatePicker(true)}>
                     <View pointerEvents="none">
                         <TextBox
                             label="Date of Birth"
-                            value={DOB.toISOString().split('T')[0]} // Formats as YYYY-MM-DD
+                            // value={birthday ? tempDate.toISOString().split('T')[0] : ''} // formats as YYYY-MM-DD
+                            value={birthday ? tempDate.toISOString().split('T')[0] : ''}
                             onChangeText={() => {}}
-                            error={DOBerror}
+                            error={birthdayError}
                             placeholder="YYYY-MM-DD"
                             editable={false}
                         />
                     </View>
                 </Pressable>
                 {showDatePicker && (
-                    <DateTimePicker
-                        value={DOB}
-                        mode="date"
-                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                        maximumDate={new Date()}
-                        onChange={(event, selectedDate) => {
-                            setShowDatePicker(Platform.OS === 'ios') // Keep open on iOS until confirmed, close on Android
-                            if (selectedDate) setDOB(selectedDate)
-                        }}
-                    />
+                    <Modal visible={showDatePicker} transparent animationType="fade" onRequestClose={() => setShowDatePicker(false)}>
+                        <Pressable style={styles.modalOverlay} onPress={() => setShowDatePicker(false)}>
+                            <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+                                <Text style={styles.modalHeader}>Select Date of Birth</Text>
+                                
+                                <DateTimePicker
+                                    textColor={colors.textBody}
+                                    accentColor={colors.primary}
+                                    value={birthday ?? new Date()}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    maximumDate={new Date()}
+                                    onValueChange={(event, selectedDate) => {
+                                        if (Platform.OS === 'android') {
+                                            setShowDatePicker(false)
+                                        }
+                                        if (selectedDate) setBirthday(selectedDate)
+                                    }}
+                                />
+
+                                <Pressable
+                                    style={({ pressed }) => [styles.doneButton, pressed && { opacity: 0.8 }]}
+                                    onPress={() => setShowDatePicker(false)}
+                                >
+                                    <Text style={styles.buttonText}>Done</Text>
+                                </Pressable>
+                            </Pressable>
+                        </Pressable>
+                    </Modal>
                 )}
                 {formError ? <Text style={styles.formError}>{formError}</Text> : null}
             </View>
@@ -107,24 +127,25 @@ export default function Signin() {
 
             <View style={styles.actions}>
                 <Pressable
-                onPress={handleSubmit}
-                disabled={loading}
-                style={({ pressed }) => [styles.button, (pressed || loading) && { opacity: 0.7 }]}
-                accessibilityRole="button"
+                    onPress={handleSubmit}
+                    disabled={loading}
+                    style={({ pressed }) => [styles.button, (pressed || loading) && { opacity: 0.7 }]}
+                    accessibilityRole="button"
                 >
                 {loading
                     ? <ActivityIndicator color={colors.surface} />
-                    : <Text style={styles.buttonText}>Sign in</Text>}
+                    : <Text style={styles.buttonText}>Confirm</Text>}
                 </Pressable>
 
                 <Pressable
-                onPress={() => { router.replace('/sympathy') }}
-                style={styles.switch}
-                accessibilityRole="button"
+                    onPress={() => { router.replace('/sympathy') }}
+                    style={styles.switch}
+                    accessibilityRole="button"
                 >
                 <Text style={styles.subtext}>Remind me later</Text>
-                {/* <Text style={styles.subtext}>First name: {firstName}</Text>
-                <Text style={styles.subtext}>Last name: {firstName}</Text> */}
+                <Text style={styles.subtext}>First name: {firstName}</Text>
+                <Text style={styles.subtext}>Last name: {lastName}</Text>
+                <Text style={styles.subtext}>birthday: {birthday ? birthday.toLocaleDateString() : 'Not set'}</Text>
                 </Pressable>
             </View>
 
@@ -150,4 +171,35 @@ export const styles = StyleSheet.create({
     buttonText: { fontFamily: fonts.semibold, fontSize: 17, color: colors.surface },
     switch: { height: 44, alignItems: 'center', justifyContent: 'center' },
     subtext: { fontFamily: fonts.medium, fontSize: 16, color: colors.primary },
+    modalOverlay: { 
+        flex: 1, 
+        backgroundColor: 'rgba(0,0,0,0.5)', 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+    },
+    modalContent: { 
+        backgroundColor: colors.background, 
+        borderRadius: 20, 
+        padding: space.lg, 
+        width: '88%', 
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    modalHeader: {
+        ...type.title,
+        fontSize: 18,
+        marginBottom: space.sm,
+    },
+    doneButton: { 
+        ...surfaces.button, 
+        height: 50, 
+        width: '100%', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        marginTop: space.md,
+    },
 })
