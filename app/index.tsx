@@ -57,7 +57,8 @@ export default function Signin() {
             return
         }
 
-        router.replace('/takeTime') // TODO: replace, so Back doesn't return to the sign-in screen
+        // router.replace('/signInSuccess') // TODO: replace, so Back doesn't return to the sign-in screen
+        {isSignUp ? router.replace('/signInSuccess') : router.replace('/newUserDetails')}
     }
 
     return (
