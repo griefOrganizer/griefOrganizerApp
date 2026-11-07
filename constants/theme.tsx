@@ -27,6 +27,7 @@ export const fonts = {
   medium: 'Inter_500Medium',
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
+  boogaloo: 'Boogaloo_400Regular',
 }
 
 export const type = {

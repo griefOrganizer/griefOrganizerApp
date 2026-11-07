@@ -1,21 +1,34 @@
 import { colors, space, type, surfaces } from '../constants/theme'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StyleSheet, Text, View} from 'react-native'
-import { BackArrow } from '../components/BackArrow'
 import { Button } from '../components/Button'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 import { useRouter } from 'expo-router'
 
 export default function Sympathy() {
-  const name = "Evelyn"
-  const router = useRouter()
-  const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'))
+  const [name, setName] = useState('')
+  // const router = useRouter()
+
+  useEffect(() => {
+    let active = true
+
+    const loadUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (active && user) {
+        setName(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '')
+      }
+    }
+
+    void loadUser()
+    return () => { active = false }
+  }, [])
 
   return (
     <SafeAreaView style={styles.screen}>
-      <BackArrow />
 
       <View style={styles.intro}>
-        <Text style={type.title}>'Hello, ${name}'</Text>
+        <Text style={type.title}>Hello, {name}</Text>
         <Text style={type.body}>
           Your login has been successful. Welcome back.
         </Text>
