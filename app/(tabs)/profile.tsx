@@ -8,6 +8,8 @@ import { fonts } from '../../constants/theme'
 
 // placeholder for "Add your own details" screen
 export default function Profile() {
+  const router = useRouter()
+  
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={styles.intro}>
