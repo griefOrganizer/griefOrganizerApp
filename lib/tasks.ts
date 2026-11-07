@@ -12,9 +12,23 @@ export type Task = {
 }
 // id and name
 
+export async function getTaskCounts() {
+    const { data, error } = await supabase.from('user_tasks').select('status')
+    if (error) throw error
+    return {
+        ready:   data.filter((t) => t.status === 'ready').length,
+        waiting: data.filter((t) => t.status === 'waiting').length,
+        done:    data.filter((t) => t.status === 'done').length,
+    }
+}
+
 // --- FETCH TASKS START --- //
 export async function getTasks(): Promise<Task[]> {
-    const { data, error } = await supabase.from('ready_tasks').select()
+    const { data, error } = await supabase
+        .from('user_tasks')
+        .select('id, title, duration')
+        .eq('status', 'ready')
+        .order('sort_order')
 
     if (error) {
         throw new Error(error.message)   // the screen calling this decides how to show it
