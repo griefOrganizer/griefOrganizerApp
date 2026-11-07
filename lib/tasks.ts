@@ -9,8 +9,11 @@ export type Task = {
     title: string
     duration: string
     href?: Href                      // add once each task gets its own screen (optional now)
+    status: TaskStatus
 }
 // id and name
+
+export type TaskStatus = 'ready' | 'waiting' | 'done'
 
 export async function getTaskCounts() {
     const { data, error } = await supabase.from('user_tasks').select('status')
@@ -26,8 +29,7 @@ export async function getTaskCounts() {
 export async function getTasks(): Promise<Task[]> {
     const { data, error } = await supabase
         .from('user_tasks')
-        .select('id, title, duration')
-        .eq('status', 'ready')
+        .select('id, title, duration, status')
         .order('sort_order')
 
     if (error) {

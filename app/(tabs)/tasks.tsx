@@ -1,68 +1,101 @@
-import { ScrollView, StyleSheet, Text, View, FlatList } from 'react-native'
+import { useCallback, useState } from 'react'
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { colors, space, type } from '../../constants/theme'
-import { getTasks, type Task } from '../../lib/tasks'
+import { useFocusEffect } from 'expo-router'
+import { colors, radius, space, type } from '../../constants/theme'
+import { getTasks, type Task, type TaskStatus } from '../../lib/tasks'
 import { StatTile } from '../../components/StatTile'
 import { ListCard } from '../../components/ListCard'
-import { useEffect, useState } from 'react'
 
-const WAITING_COUNT = 7
-const DONE_COUNT = 13
+// One entry per tab: what the tile says, the heading above the list, and the empty message
+const TABS: { status: TaskStatus; label: string; heading: string; empty: string }[] = [
+  { status: 'ready',   label: 'ready',   heading: 'Ready when you are', empty: 'Nothing to do right now. We\'ll let you know when something\'s ready.' },
+  { status: 'waiting', label: 'waiting', heading: 'Waiting on others',  empty: 'Nothing is waiting on anyone else right now.' },
+  { status: 'done',    label: 'done',    heading: 'Completed',          empty: 'Tasks you finish will show up here.' },
+]
 
 export default function Tasks() {
-  const [readyTasks, setReadyTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [selected, setSelected] = useState<TaskStatus>('ready')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    getTasks()
-      .then(setReadyTasks)
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))   // runs after success or failure
-  }, [])
+  // Reload every time this tab comes into view, so finishing a task updates the counts
+  useFocusEffect(
+    useCallback(() => {
+      let active = true
+      getTasks()
+        .then((t) => { if (active) { setTasks(t); setError(null) } })
+        .catch((e: Error) => { if (active) setError(e.message) })
+        .finally(() => { if (active) setLoading(false) })
+      return () => { active = false }
+    }, [])
+  )
 
-  const readyCount = readyTasks.length
+  const counts = {
+    ready:   tasks.filter((t) => t.status === 'ready').length,
+    waiting: tasks.filter((t) => t.status === 'waiting').length,
+    done:    tasks.filter((t) => t.status === 'done').length,
+  }
+  const tab = TABS.find((t) => t.status === selected)!
+  const visibleTasks = tasks.filter((t) => t.status === selected)
 
   return (
     // bottom edge is left out because the tab bar already handles it
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
+      {/* ---------- Frozen header: doesn't scroll ---------- */}
+      <View style={styles.header}>
         <View style={styles.intro}>
           <Text style={type.title}>Ease into it</Text>
           <Text style={type.body}>
-            {readyCount} easy {readyCount === 1 ? 'task' : 'tasks'} ready. Nothing urgent is waiting on you.
+            {counts.ready} easy {counts.ready === 1 ? 'task' : 'tasks'} ready. Nothing urgent is waiting on you.
           </Text>
         </View>
 
-        <View style={styles.stats}>
-          <StatTile value={readyCount} label="ready" />
-          <StatTile value={WAITING_COUNT} label="waiting" />
-          <StatTile value={DONE_COUNT} label="done" />
+        <View style={styles.stats} accessibilityRole="tablist">
+          {TABS.map((t) => {
+            const isSelected = t.status === selected
+            return (
+              <Pressable
+                key={t.status}
+                onPress={() => setSelected(t.status)}
+                style={({ pressed }) => [
+                  styles.tab,
+                  isSelected && styles.tabSelected,
+                  pressed && { opacity: 0.7 },
+                ]}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${counts[t.status]} ${t.label}`}
+              >
+                <StatTile value={counts[t.status]} label={t.label} />
+              </Pressable>
+            )
+          })}
         </View>
 
-        <View style={styles.section}>
-          <Text style={type.section} accessibilityRole="header">Ready when you are</Text>
-          {error && <Text style={type.body}>Couldn't load tasks: {error}</Text>}
+        <Text style={type.section} accessibilityRole="header">{tab.heading}</Text>
+        {error && <Text style={type.body}>Couldn't load tasks: {error}</Text>}
+      </View>
 
-          {/* <View>
-            <FlatList
-                data={readyTasks}
-                renderItem={({ item }) => <ListCard title={item.title} subtitle={item.duration} href={item.href} />}
-                keyExtractor={item => item.id}
-            />
-          </View> */}
-
-          {loading ? (
-            <Text style={type.body}>Loading...</Text>
-          ) : readyCount > 0 ? (
-            readyTasks.map((task) => (
-              <ListCard key={task.id} title={task.title} subtitle={task.duration} href={task.href} />
-            ))
-          ) : (
-            !error && <Text style={type.body}>Nothing to do right now. We'll let you know when something's ready.</Text>
-          )}
-        </View>
-      </ScrollView>
+      {/* ---------- Only this part scrolls ---------- */}
+      <FlatList
+        style={styles.list}
+        contentContainerStyle={styles.listContent}
+        data={visibleTasks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ListCard title={item.title} subtitle={item.duration} href={item.href} />
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: space.md }} />}
+        ListEmptyComponent={
+          loading
+            ? <Text style={type.body}>Loading...</Text>
+            : !error ? <Text style={type.body}>{tab.empty}</Text> : undefined
+        }
+        showsVerticalScrollIndicator={true}
+      />
     </SafeAreaView>
   )
 }
@@ -72,10 +105,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
+  header: {
     paddingHorizontal: space.lg,
     paddingTop: space.lg,
-    paddingBottom: space.xl,
+    paddingBottom: space.md,
     gap: space.lg,
   },
   intro: {
@@ -86,7 +119,30 @@ const styles = StyleSheet.create({
     gap: space.md,
     paddingHorizontal: space.sm,   // tiles slightly pushed in from the cards, like figma
   },
-  section: {
-    gap: space.md,
+  tab: {
+    flex: 1,
+    flexDirection: 'row',          // THE FIX: lets StatTile's own flex: 1 stretch sideways, not collapse
+    borderRadius: radius.card + 2, // hugs the tile's rounded corners
+    borderWidth: 2,
+    borderColor: 'transparent',    // same size whether selected or not, so nothing shifts
+  },
+  tabSelected: {
+    borderColor: colors.primary,
+  },
+  list: {
+    flex: 1,                       // fills the rest of the screen below the header
+  },
+  listContent: {
+    paddingHorizontal: space.lg,
+    paddingBottom: space.xl,
   },
 })
+
+
+{/* <View>
+  <FlatList
+      data={readyTasks}
+      renderItem={({ item }) => <ListCard title={item.title} subtitle={item.duration} href={item.href} />}
+      keyExtractor={item => item.id}
+  />
+</View> */}
