@@ -3,7 +3,6 @@ import { FlatList, StyleSheet, Text, View, Alert, Button } from 'react-native'
 import { type Href } from 'expo-router'
 import * as FileSystem from 'expo-file-system/legacy'; // FileSystem.documentDirectory was deprecated
 import { surfaces, type } from '../constants/theme'
-
 import { supabase } from '../lib/supabase'
 
 type Task = {

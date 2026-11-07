@@ -6,16 +6,17 @@ type TextCardProps = {
     text: string;
     subtext?: string;
     href?: Href;
+    onPress?: () => void
 };
 
-export const TextCard = ({ text, subtext, href }: TextCardProps) => {
+export const TextCard = ({ text, subtext, href, onPress }: TextCardProps) => {
     // 'icon: IconComponent' renames the prop
     const router = useRouter()
 
     return (
         <Pressable
             style={({ pressed }) => [styles.textCard, pressed && { opacity: 0.7 }]}
-            onPress={() => href && router.push(href)}
+            onPress={() => (onPress ? onPress() : href && router.push(href))}
             accessibilityRole="button" >
                 <Text style={type.label}>{text}</Text>
                 <Text style={type.small}>{subtext}</Text>

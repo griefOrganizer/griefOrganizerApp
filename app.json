@@ -4,7 +4,7 @@
     "slug": "griefOrganizerApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/cowboy.webp",
+    "icon": "./assets/Logo.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
