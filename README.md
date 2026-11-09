@@ -7,3 +7,7 @@ To do:
 
 This project uses Lucide icons for simplicity and consistency. View options for icons and find their associated names here: https://lucide.dev/icons/
 To use an icon, import the icon with its name from 'lucide-react-native' and implement using <Icon icon={<IconName>} />
+
+For address autofill:
+- sign up at geoapify.com
+- set project's API key to EXPO_PUBLIC_GEOAPIFY_KEY in .env
