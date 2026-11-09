@@ -31,20 +31,23 @@ export const fonts = {
 }
 
 export const type = {
-  title: { fontFamily: fonts.bold, fontSize: 34, lineHeight: 40, color: colors.text }, // Screen title: "We're sorry for your loss." / "You're making progress"
-  body: { fontFamily: fonts.regular, fontSize: 18, lineHeight: 28, color: colors.textBody }, // Paragraph under the title
-  section: { fontFamily: fonts.bold, fontSize: 18, lineHeight: 24, color: colors.primaryDark }, // Section heading: "Ready when you are"
-  cardTitle: { fontFamily: fonts.semibold, fontSize: 20, lineHeight: 26, color: colors.text }, // Card title: "Notify bank account primary contact"
-  cardSubtitle: { fontFamily: fonts.regular, fontSize: 17, lineHeight: 24, color: colors.textBody }, // Card subtitle: "2 hours", "Share bank details"
-  stat: { fontFamily: fonts.bold, fontSize: 32, lineHeight: 38, color: colors.text }, // Big stat number: "13"
-  statLabel: { fontFamily: fonts.regular, fontSize: 16, color: colors.textMuted }, // Stat label: "waiting"
-  button: { fontFamily: fonts.semibold, fontSize: 20, color: colors.textOnPrimary }, // Button text
+  title: { fontFamily: fonts.bold, fontSize: 34, lineHeight: 40, color: colors.text },
+  body: { fontFamily: fonts.regular, fontSize: 18, lineHeight: 28, color: colors.textBody },
+  section: { fontFamily: fonts.bold, fontSize: 18, lineHeight: 24, color: colors.primaryDark },
+  cardTitle: { fontFamily: fonts.semibold, fontSize: 20, lineHeight: 26, color: colors.text },
+  cardSubtitle: { fontFamily: fonts.regular, fontSize: 17, lineHeight: 24, color: colors.textBody },
+  stat: { fontFamily: fonts.bold, fontSize: 32, lineHeight: 38, color: colors.text },
+  statLabel: { fontFamily: fonts.regular, fontSize: 16, color: colors.textMuted },
   label: { fontFamily: fonts.semibold, fontSize: 17, color: colors.text },
-  small: { fontFamily: fonts.regular, fontSize: 15, color: colors.textMuted }, // "Free to use. No ads"
+  small: { fontFamily: fonts.regular, fontSize: 15, color: colors.textMuted },
+  heading: { fontFamily: fonts.bold, fontSize: 22, lineHeight: 28, color: colors.text },
+  link: { fontFamily: fonts.medium, fontSize: 16, color: colors.primaryDark },
+  error: { fontFamily: fonts.regular, fontSize: 15, color: colors.error },
+  button: { fontFamily: fonts.semibold, fontSize: 20, color: colors.textOnPrimary },
 }
 
-export const space = { xs: 6, sm: 10, md: 16, lg: 24, xl: 32 }
-export const radius = { card: 20, button: 16, tile: 20, lgIcon: 200}
+export const space = { xxs: 4, xs: 6, sm: 10, md: 16, lg: 24, xl: 32 }
+export const radius = { card: 20, button: 16, tile: 20, avatar: 18, lgIcon: 200 }
 export const iconSize = { sm: 24, md: 36, lg: 48 }
 
 
@@ -66,7 +69,38 @@ export const surfaces = {
   button: {
     backgroundColor: colors.primary,
     borderRadius: radius.button,
-    paddingVertical: 18,
+    minHeight: 60,                       // stays the same height when spinner replaces text
     alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
+  textButton: {                          // text-only buttons, sized to be easy to tap
+    minHeight: 44,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  backdrop: {                            // dark overlay behind popups (modals)
+    flex: 1,
+    justifyContent: 'center' as const,
+    padding: space.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modal: {                               // popup card itself (modals)
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    padding: space.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+}
+
+export const layout = {
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { flexGrow: 1, paddingHorizontal: space.lg, paddingBottom: space.lg },
+  intro: { marginTop: space.lg, gap: space.md },
+  form: { marginTop: space.xl, gap: space.md },
+  actions: { marginTop: space.xl, gap: space.xs },
+  logo: { width: 120, height: 120, resizeMode: 'contain' as const, alignSelf: 'center' as const },
 }
