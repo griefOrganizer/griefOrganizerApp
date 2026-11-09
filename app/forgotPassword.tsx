@@ -5,7 +5,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { colors, fonts, space, type, surfaces } from '../constants/theme'
+import { colors, fonts, space, type, surfaces, layout } from '../constants/theme'
 import { TextBox } from '../components/TextBox'
 import { supabase } from '../lib/supabase'
 
@@ -189,15 +189,15 @@ export default function ForgotPassword() {
 }
 
 export const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background },
-    content: { flexGrow: 1, paddingHorizontal: space.lg, paddingBottom: space.lg },
-    intro: { marginTop: space.lg, gap: space.md },
-    logoImage: { width: 120, height: 120, resizeMode: 'contain', alignSelf: 'center' },
-    form: { marginTop: space.xl, gap: space.md },
-    formError: { ...type.small, color: colors.error },
-    actions: { marginTop: space.xl, gap: space.xs },
-    button: { ...surfaces.button, height: 60, alignItems: 'center', justifyContent: 'center' },
-    buttonText: { fontFamily: fonts.semibold, fontSize: 17, color: colors.surface },
-    switch: { height: 44, alignItems: 'center', justifyContent: 'center' },
-    subtext: { fontFamily: fonts.medium, fontSize: 16, color: colors.primary },
+    screen: layout.screen,
+    content: layout.content,
+    intro: layout.intro,
+    logoImage: layout.logo,
+    form: layout.form,
+    formError: type.error,
+    actions: layout.actions,
+    button: surfaces.button,
+    buttonText: type.button,
+    switch: surfaces.textButton,
+    subtext: type.link,
 })

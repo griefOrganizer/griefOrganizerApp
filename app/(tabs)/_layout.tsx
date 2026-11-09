@@ -18,8 +18,10 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.primary,
           borderTopWidth: 0,
-          height: 72 + insets.bottom,      // room for the home indicator on newer iPhones
-          paddingTop: 12,
+          // height: 72 + insets.bottom,      // room for the home indicator on newer iPhones
+          // paddingTop: 12,
+          height: 60 + insets.bottom,      // room for the home indicator on newer iPhones
+          paddingTop: 25,
           paddingBottom: insets.bottom,
           // soft shadow above the bar
           shadowColor: '#000',
@@ -34,21 +36,21 @@ export default function TabLayout() {
         name="profile"
         options={{
           tabBarAccessibilityLabel: 'Your details',
-          tabBarIcon: ({ color }) => <User size={32} color={color} strokeWidth={1.75} />,
+          tabBarIcon: ({ color }) => <User size={45} color={color} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="tasks"
         options={{
           tabBarAccessibilityLabel: 'Tasks',
-          tabBarIcon: ({ color }) => <House size={32} color={color} strokeWidth={1.75} />,
+          tabBarIcon: ({ color }) => <House size={45} color={color} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="inbox"
         options={{
           tabBarAccessibilityLabel: 'Messages',
-          tabBarIcon: ({ color }) => <Mail size={32} color={color} strokeWidth={1.75} />,
+          tabBarIcon: ({ color }) => <Mail size={45} color={color} strokeWidth={1.75} />,
         }}
       />
     </Tabs>

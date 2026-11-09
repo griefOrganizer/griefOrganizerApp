@@ -121,10 +121,10 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',          // THE FIX: lets StatTile's own flex: 1 stretch sideways, not collapse
-    borderRadius: radius.card + 2, // hugs the tile's rounded corners
+    flexDirection: 'row',
+    borderRadius: radius.card + 2, // fits underlying tile's rounded corners
     borderWidth: 2,
-    borderColor: 'transparent',    // same size whether selected or not, so nothing shifts
+    borderColor: 'transparent',    // same size whether selected or not so nothing shifts
   },
   tabSelected: {
     borderColor: colors.primary,
