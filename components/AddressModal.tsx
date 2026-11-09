@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import {
     ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MapPin } from 'lucide-react-native'
 import { colors, fonts, space, type, surfaces } from '../constants/theme'
 import { TextBox } from './TextBox'
@@ -29,6 +30,7 @@ export function AddressModal({ visible, currentCounty, currentState, onClose, on
     const [county, setCounty] = useState('')
     const [state, setState] = useState('')
     const [error, setError] = useState('')
+    const insets = useSafeAreaInsets()   // so the card sits below the notch / status bar
     const [saving, setSaving] = useState(false)
 
     // Reset every time the pop-up opens
@@ -87,15 +89,17 @@ export function AddressModal({ visible, currentCounty, currentState, onClose, on
     return (
         <Modal visible transparent animationType="fade" onRequestClose={onClose}>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-                <Pressable style={surfaces.backdrop} onPress={onClose} accessibilityLabel="Close">
+                <Pressable style={[surfaces.backdrop, styles.backdropTop, { paddingTop: insets.top + space.md }]} onPress={onClose} accessibilityLabel="Close">
                     <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
                         <Text style={styles.title} accessibilityRole="header">Where do you live?</Text>
 
                         {!manual ? (
                             <>
-                                <Text style={type.cardSubtitle}>
-                                    Start typing your address and we'll fill in your county and state.
-                                </Text>
+                                {query.trim().length < 3 && (   // only show the instructions before results appear
+                                    <Text style={type.cardSubtitle}>
+                                        Start typing your address and we'll fill in your county and state.
+                                    </Text>
+                                )}
                                 <TextBox
                                     label="Address"
                                     value={query}
@@ -126,9 +130,9 @@ export function AddressModal({ visible, currentCounty, currentState, onClose, on
                                             >
                                                 <MapPin size={20} color={colors.primaryDark} strokeWidth={2} />
                                                 <View style={{ flex: 1 }}>
-                                                    <Text style={styles.line1}>{s.line1}</Text>
-                                                    {s.line2 ? <Text style={styles.line2}>{s.line2}</Text> : null}
-                                                    {s.county ? <Text style={styles.fills}>{s.county}, {s.state}</Text> : null}
+                                                    <Text style={styles.line1} numberOfLines={1}>{s.line1}</Text>
+                                                    {s.line2 ? <Text style={styles.line2} numberOfLines={1}>{s.line2}</Text> : null}
+                                                    {s.county ? <Text style={styles.fills} numberOfLines={1}>{s.county}, {s.state}</Text> : null}
                                                 </View>
                                             </Pressable>
                                         ))}
@@ -178,11 +182,12 @@ const styles = StyleSheet.create({
     card: { ...surfaces.modal, gap: space.md },
     title: type.cardTitle,
     results: { borderWidth: 1, borderColor: colors.border, borderRadius: 14, overflow: 'hidden' },
-    result: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-start', padding: space.md, backgroundColor: colors.surface },
     divider: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
     pressed: { backgroundColor: colors.primarySoft },
     line1: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text },
     line2: { fontFamily: fonts.regular, fontSize: 15, color: colors.textMuted },
     fills: { fontFamily: fonts.medium, fontSize: 14, color: colors.primaryDark, marginTop: 2 },
     link: { ...surfaces.textButton, alignItems: 'flex-start' },
+    backdropTop: { justifyContent: 'flex-start' },
+    result: { flexDirection: 'row', gap: space.sm, alignItems: 'center', paddingVertical: space.sm, paddingHorizontal: space.md, backgroundColor: colors.surface },
 })

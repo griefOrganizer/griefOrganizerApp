@@ -16,18 +16,27 @@ export async function searchAddresses(text: string, signal?: AbortSignal): Promi
         `?text=${encodeURIComponent(text)}` +
         '&filter=countrycode:us' +        // US addresses only
         '&format=json' +
-        '&limit=5' +
+        '&limit=5' +                      // still have 3 left after duplicates are removed if limit=5
         `&apiKey=${encodeURIComponent(KEY)}`
 
     const res = await fetch(url, { signal })
     if (!res.ok) throw new Error(`Address lookup failed (${res.status})`)
     const json = await res.json()
 
-    return (json.results ?? []).map((r: any, i: number) => ({
-        id: String(r.place_id ?? i),
-        line1: r.address_line1 ?? r.formatted ?? '',
-        line2: r.address_line2 ?? '',
-        county: r.county ?? null,
-        state: r.state ?? null,
-    }))
+        const seen = new Set<string>()
+    return (json.results ?? [])
+        .map((r: any, i: number) => ({
+            id: String(r.place_id ?? i),
+            line1: r.address_line1 ?? r.formatted ?? '',
+            line2: (r.address_line2 ?? '').replace(/,?\s*United States of America$/, ''),
+            county: r.county ?? null,
+            state: r.state ?? null,
+        }))
+        .filter((s: AddressSuggestion) => {          // drop duplicates of the same place
+            const key = `${s.line1}|${s.county}`
+            if (seen.has(key)) return false
+            seen.add(key)
+            return true
+        })
+        .slice(0, 3)                                 // only the top 3
 }

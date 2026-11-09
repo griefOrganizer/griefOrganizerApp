@@ -9,6 +9,7 @@ import { getConnections, getMyProfile, type Connection, type Profile } from '../
 import { DetailGroup, DetailRow } from '../../components/DetailGroup'
 import { EditDetailModal, type EditableField } from '../../components/EditDetailModal'
 import { formatPhone, fromISODate } from '../../lib/validation'
+import { AddressModal } from '../../components/AddressModal'
 
 type Tab = 'connections' | 'details'
 
@@ -63,6 +64,7 @@ export default function ProfileScreen() {
     const [connections, setConnections] = useState<Connection[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [addressOpen, setAddressOpen] = useState(false)
 
     // Reload whenever the screen comes into view (e.g. after editing details)
     const load = useCallback(async () => {
@@ -184,12 +186,26 @@ export default function ProfileScreen() {
                                 onPress={open('secondary_email', 'Secondary email', 'email', profile.secondaryEmail)} last />
                         </DetailGroup>
 
-                        <DetailGroup title="Where you live">
+                        {/* <DetailGroup title="Where you live">
                             <DetailRow label="County" value={profile.county}
                                 onPress={open('county', 'County', 'place', profile.county)} />
                             <DetailRow label="State" value={profile.state}
                                 onPress={open('state', 'State', 'place', profile.state)} last />
+                        </DetailGroup> */}
+                        {/* ^^^ without autofill */}
+
+                        <DetailGroup title="Where you live">
+                            <DetailRow label="County" value={profile.county}
+                                onPress={() => setAddressOpen(true)} />
+                            <DetailRow label="State" value={profile.state}
+                                onPress={() => setAddressOpen(true)} last />
                         </DetailGroup>
+
+                        {/* with autofill vvv */}
+                        {/* <DetailRow label="County" value={profile.county}
+                            onPress={() => setAddressOpen(true)} />
+                        <DetailRow label="State" value={profile.state}
+                            onPress={() => setAddressOpen(true)} last /> */}
 
                         <Pressable onPress={signOut} style={styles.textButton} accessibilityRole="button">
                             <Text style={styles.textButtonLabel}>Sign out</Text>
@@ -197,7 +213,14 @@ export default function ProfileScreen() {
                     </>
                 )}
             </ScrollView>
-          <EditDetailModal field={editing} onClose={() => setEditing(null)} onSaved={load} />
+            <EditDetailModal field={editing} onClose={() => setEditing(null)} onSaved={load} />
+            <AddressModal
+                visible={addressOpen}
+                currentCounty={profile?.county ?? null}
+                currentState={profile?.state ?? null}
+                onClose={() => setAddressOpen(false)}
+                onSaved={load}
+            />
         </SafeAreaView>
     )
 }
