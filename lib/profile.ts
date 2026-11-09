@@ -85,3 +85,11 @@ export async function updateProfileField(column: ProfileColumn, value: string | 
     const { error } = await supabase.from('profiles').upsert({ id: user.id, [column]: value })
     if (error) throw error
 }
+
+// save function but takes multiple fields
+export async function updateProfileFields(values: Partial<Record<ProfileColumn, string | null>>) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not signed in')
+    const { error } = await supabase.from('profiles').upsert({ id: user.id, ...values })
+    if (error) throw error
+}
