@@ -30,8 +30,10 @@ export default function Opener() {
             duration: 400,
             useNativeDriver: true,
         }).start(async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!session) {
+            // getUser() checks with Supabase, not just the phone's memory
+            const { data: { user }, error } = await supabase.auth.getUser()
+            if (error || !user) {
+                await supabase.auth.signOut({ scope: 'local' })   // forget a saved login that's no longer valid
                 router.replace('/signin')
                 return
             }
@@ -68,9 +70,9 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     logoImage: {
-        width: 250, 
-        height: 250, 
-        resizeMode: 'contain', 
+        width: 250,
+        height: 250,
+        resizeMode: 'contain',
         alignSelf: 'center',
         shadowColor: colors.tabInactive,
         shadowRadius: 1,

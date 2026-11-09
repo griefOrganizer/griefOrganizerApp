@@ -99,6 +99,11 @@ export default function ProfileScreen() {
         router.replace('/signin')
     }
 
+    async function connectEmail() {
+        // await supabase.auth.signOut()
+        router.replace('/connectEmail')
+    }
+
     return (
         <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
 
@@ -207,9 +212,14 @@ export default function ProfileScreen() {
                         <DetailRow label="State" value={profile.state}
                             onPress={() => setAddressOpen(true)} last /> */}
 
-                        <Pressable onPress={signOut} style={styles.textButton} accessibilityRole="button">
-                            <Text style={styles.textButtonLabel}>Sign out</Text>
-                        </Pressable>
+                        <View style={styles.textButtons}>
+                            <Pressable onPress={connectEmail}  accessibilityRole="button">
+                                <Text style={styles.connectEmailText}>Connect Email</Text>
+                            </Pressable>
+                            <Pressable onPress={signOut} accessibilityRole="button">
+                                <Text style={styles.signOutText}>Sign out</Text>
+                            </Pressable>
+                        </View>
                     </>
                 )}
             </ScrollView>
@@ -252,6 +262,8 @@ const styles = StyleSheet.create({
     detailMissing: { fontFamily: fonts.regular, color: colors.textMuted },
     detailSub: { ...type.body, color: colors.text, marginTop: 4 },
 
-    textButton: { height: 44, alignItems: 'center', justifyContent: 'center' },
-    textButtonLabel: { fontFamily: fonts.medium, fontSize: 16, color: colors.primary },
+    textButtons: { height: 44, alignItems: 'center', justifyContent: 'center', gap: 20, marginTop: 20 },
+    // textButtonLabel: { fontFamily: fonts.medium, fontSize: 16, color: colors.primary },
+    signOutText: { fontFamily: fonts.bold, fontSize: 18, color: colors.error },
+    connectEmailText: { fontFamily: fonts.medium, fontSize: 18, color: colors.primary },
 })

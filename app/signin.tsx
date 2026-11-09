@@ -62,7 +62,7 @@ export default function Signin() {
         }
 
         if (isSignUp) {
-            router.replace('/userDetails')
+            router.replace('/accountType')
             return
         }
         router.replace(await homeRoute())
@@ -114,7 +114,7 @@ export default function Signin() {
                             autoCapitalize="none"
                             autoComplete={isSignUp ? 'new-password' : 'current-password'}
                             textContentType={isSignUp ? 'newPassword' : 'password'}
-                            returnKeyType="next"
+                            returnKeyType="done"
                             onSubmitEditing={handleSubmit}
                         />
                         {formError ? <Text style={styles.formError}>{formError}</Text> : null}

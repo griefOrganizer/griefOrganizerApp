@@ -1,12 +1,23 @@
 import { Pressable, StyleSheet } from 'react-native'
 import { space, colors } from '../constants/theme'
-import { useRouter} from 'expo-router'
+import { useRouter } from 'expo-router'
 
 import { ChevronLeft } from 'lucide-react-native'
 
-export const BackArrow = () => {
+type BackArrowProps = {
+    route?: string;
+};
+
+export const BackArrow = ({ route }: BackArrowProps) => {
     const router = useRouter()
-    const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'))
+
+    // if route prop provided, go that route. otherwise, follow the normal back route
+    const goBack = () =>
+        route != null
+            ? router.replace(route)
+            : router.canGoBack()
+                ? router.back()
+                : router.replace('/')
 
     return (
         <Pressable
@@ -15,7 +26,7 @@ export const BackArrow = () => {
             accessibilityRole="button"
             accessibilityLabel="Go back"
             style={styles.back}
-            >
+        >
             <ChevronLeft size={32} color={colors.text} />
         </Pressable>
     )

@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router'
 export default function Sympathy() {
   const router = useRouter()
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/'))
-  {/* app/index.tsx is the root path so just need to go back one by routing with "/" */}
+  {/* app/index.tsx is the root path so just need to go back one by routing with "/" */ }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -34,7 +34,7 @@ export default function Sympathy() {
         </View>
       </View>
 
-    <Button text="I'm ready for the next step" href="/takeTime" />
+      <Button text="I'm ready for the next step" href="/userDetails" />
     </SafeAreaView>
   )
 }

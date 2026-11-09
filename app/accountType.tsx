@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { TextCard } from '../components/TextCard'
 import { colors, space, type } from '../constants/theme'
 import { saveSituation, type Situation } from '../lib/profile'
+import { supabase } from '../lib/supabase'
 
 export default function AccountType() {
     const router = useRouter()
@@ -17,11 +18,15 @@ export default function AccountType() {
         setError('')
         try {
             await saveSituation(situation)
-            router.push(situation === 'loss' ? '/sympathy' : '/takeTime')
-        } catch {
+            router.push(situation === 'loss' ? '/sympathy' : '/userDetails')
+        } catch (e: any) {
+            console.warn('saveSituation failed:', e)
+            if (e?.message === 'Not signed in') {
+                await supabase.auth.signOut({ scope: 'local' })
+                router.replace('/signin')
+                return
+            }
             setError('We couldn\'t save your choice. Please try again.')
-        } finally {
-            setSaving(false)
         }
     }
 
@@ -36,16 +41,16 @@ export default function AccountType() {
                 <TextCard
                     text="My loved one has passed"
                     subtext="We'll show you what to do first, in plain steps."
-                    onPress={() => choose('loss')}/>
+                    onPress={() => choose('loss')} />
                 <TextCard
                     text="I'm preparing for a loss"
                     subtext="Get organized ahead of time and share the load."
-                    onPress={() => choose('preparing')}/>
+                    onPress={() => choose('preparing')} />
                 {error ? <Text style={[type.small, { color: colors.error }]}>{error}</Text> : null}
             </View>
 
             <View style={styles.bottomText}>
-                <Text style={[type.small, { textAlign: 'center'}]}>Free to use. No ads. Take your time.</Text>
+                <Text style={[type.small, { textAlign: 'center' }]}>Free to use. No ads. Take your time.</Text>
             </View>
         </SafeAreaView>
     )
@@ -54,6 +59,7 @@ export default function AccountType() {
 export const styles = StyleSheet.create({
     screen: {
         flex: 1,
+        backgroundColor: colors.background,
         padding: space.lg,
         gap: space.lg,
         paddingTop: (space.lg * 2),       // TODO: standardize this to avoid iPhone notch
@@ -63,7 +69,7 @@ export const styles = StyleSheet.create({
         gap: space.md,
         flexDirection: 'column',
     },
-    bottomText:  {
+    bottomText: {
         marginTop: 'auto',
         padding: 15,
     }

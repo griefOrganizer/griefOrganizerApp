@@ -26,7 +26,7 @@ export async function saveSituation(situation: Situation) {
 // where a user already signed in should land
 export async function homeRoute() {
     const situation = await getSituation()
-    return situation ? '/tasks' : '/userDetails'
+    return situation ? '/tasks' : '/accountType'
 }
 
 export type Profile = {
