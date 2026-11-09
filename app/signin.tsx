@@ -69,89 +69,89 @@ export default function Signin() {
     }
 
     return (
-    <SafeAreaView style={styles.screen}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <SafeAreaView style={styles.screen}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
-            <View style={styles.intro}>
-                
-                <Image source={require('../assets/LogoNoBackground.png')} style={styles.logoImage} />
-                <Text style={type.title}> {isSignUp ? 'Create an account' : 'Sign in'} </Text>
-                <Text style={type.body}>
-                {isSignUp
-                    ? 'An account lets us save your progress so you can pick up where you left off.'
-                    : 'Sign in so we can save the right details for you.'}
-                </Text>
-            
-            </View>
+                    <View style={styles.intro}>
 
-            <View style={styles.form}>
-                <TextBox
-                label="Email"
-                value={email}
-                onChangeText={(value) => { setEmail(value) ; clearErrors() }}
-                // Errors are cleared when user types in fields
-                error={emailError}
-                placeholder="you@example.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                textContentType="emailAddress"
-                returnKeyType="next"
-                onSubmitEditing={() => (passwordRef.current as any)?.focus()}
-                submitBehavior="submit"
-                />
-                
-                <TextBox
-                ref={passwordRef}
-                label="Password"
-                value={password}
-                onChangeText={(value) => { setPassword(value) ; clearErrors() }}
-                error={passwordError}
-                placeholder="*********"
-                password
-                autoCapitalize="none"
-                autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                textContentType={isSignUp ? 'newPassword' : 'password'}
-                returnKeyType="next"
-                onSubmitEditing={handleSubmit}
-                />
-                {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+                        <Image source={require('../assets/LogoNoBackground.png')} style={styles.logoImage} />
+                        <Text style={type.title}> {isSignUp ? 'Create an account' : 'Sign in'} </Text>
+                        <Text style={type.body}>
+                            {isSignUp
+                                ? 'An account lets us save your progress so you can pick up where you left off.'
+                                : 'Sign in so we can save the right details for you.'}
+                        </Text>
 
-                <Text style={styles.switchText} onPress={() => router.replace('/forgotPassword')}>
-                    {isSignUp ? '' : 'Forgot password'}
-                </Text>
-            </View>
+                    </View>
 
-            <View style={{ flex: 1 }} />
+                    <View style={styles.form}>
+                        <TextBox
+                            label="Email"
+                            value={email}
+                            onChangeText={(value) => { setEmail(value); clearErrors() }}
+                            // Errors are cleared when user types in fields
+                            error={emailError}
+                            placeholder="you@example.com"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            autoComplete="email"
+                            textContentType="emailAddress"
+                            returnKeyType="next"
+                            onSubmitEditing={() => (passwordRef.current as any)?.focus()}
+                            submitBehavior="submit"
+                        />
 
-            <View style={styles.actions}>
-                <Pressable
-                onPress={handleSubmit}
-                disabled={loading}
-                style={({ pressed }) => [styles.button, (pressed || loading) && { opacity: 0.7 }]}
-                accessibilityRole="button"
-                >
-                {loading
-                    ? <ActivityIndicator color={colors.surface} />
-                    : <Text style={styles.buttonText}>{isSignUp ? 'Create account' : 'Sign in'}</Text>}
-                </Pressable>
+                        <TextBox
+                            ref={passwordRef}
+                            label="Password"
+                            value={password}
+                            onChangeText={(value) => { setPassword(value); clearErrors() }}
+                            error={passwordError}
+                            placeholder="*********"
+                            password
+                            autoCapitalize="none"
+                            autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                            textContentType={isSignUp ? 'newPassword' : 'password'}
+                            returnKeyType="next"
+                            onSubmitEditing={handleSubmit}
+                        />
+                        {formError ? <Text style={styles.formError}>{formError}</Text> : null}
 
-                <Pressable
-                onPress={() => { setFormError('') ; setMode(isSignUp ? 'signIn' : 'signUp') ; clearErrors()}}
-                // Clear errors when user changes mode
-                style={styles.switch}
-                accessibilityRole="button"
-                >
-                <Text style={styles.switchText}>
-                    {isSignUp ? 'Already have an account? Sign in' : 'New here? Create an account'}
-                </Text>
-                </Pressable>
-            </View>
+                        <Text style={styles.switchText} onPress={() => router.replace('/forgotPassword')}>
+                            {isSignUp ? '' : 'Forgot password'}
+                        </Text>
+                    </View>
 
-            </ScrollView>
-        </KeyboardAvoidingView>
+                    <View style={{ flex: 1 }} />
+
+                    <View style={styles.actions}>
+                        <Pressable
+                            onPress={handleSubmit}
+                            disabled={loading}
+                            style={({ pressed }) => [styles.button, (pressed || loading) && { opacity: 0.7 }]}
+                            accessibilityRole="button"
+                        >
+                            {loading
+                                ? <ActivityIndicator color={colors.surface} />
+                                : <Text style={styles.buttonText}>{isSignUp ? 'Create account' : 'Sign in'}</Text>}
+                        </Pressable>
+
+                        <Pressable
+                            onPress={() => { setFormError(''); setMode(isSignUp ? 'signIn' : 'signUp'); clearErrors() }}
+                            // Clear errors when user changes mode
+                            style={styles.switch}
+                            accessibilityRole="button"
+                        >
+                            <Text style={styles.switchText}>
+                                {isSignUp ? 'Already have an account? Sign in' : 'New here? Create an account'}
+                            </Text>
+                        </Pressable>
+                    </View>
+
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     )
 }

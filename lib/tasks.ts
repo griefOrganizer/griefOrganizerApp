@@ -8,13 +8,21 @@ export type Task = {
     id: string                       // unique
     title: string
     duration: string
-    href?: Href                      // add once each task gets its own screen (optional now)
+    href?: Href
     status: TaskStatus
 }
-// id and name
+
+export type TaskDetail = Task & {
+    details: string | null
+    link: string | null
+    needs: string[]
+    steps: string[]
+    completedAt: string | null
+}
 
 export type TaskStatus = 'ready' | 'waiting' | 'done'
 
+// Fetch number of each type of task
 export async function getTaskCounts() {
     const { data, error } = await supabase.from('user_tasks').select('status')
     if (error) throw error
@@ -25,7 +33,7 @@ export async function getTaskCounts() {
     }
 }
 
-// --- FETCH TASKS START --- //
+// Fetch tasks (all)
 export async function getTasks(): Promise<Task[]> {
     const { data, error } = await supabase
         .from('user_tasks')
@@ -36,11 +44,10 @@ export async function getTasks(): Promise<Task[]> {
         throw new Error(error.message)   // the screen calling this decides how to show it
     }
 
-    return data ?? []
+    return (data ?? []).map((t) => ({ ...t, href: `/task/${t.id}` as Href }))
 }
-// --- FETCH TASKS END --- //
 
-// -- WRITE DATA START --- //
+// Obsolete
 export const writeTasksToFile = async (tasks: Task[]): Promise<string | null> => {
     const fileUri = `${FileSystem.documentDirectory}data.txt`; // define the local path inside the app's document directory
     const contentToWrite = JSON.stringify(tasks, null, 2);
@@ -63,4 +70,37 @@ export const writeTasksToFile = async (tasks: Task[]): Promise<string | null> =>
         return null;
     }
 };
-// --- WRITE DATA END --- //
+
+// One task: the user's copy (status) plus the template's content (details, needs, steps)
+export async function getTask(id: string): Promise<TaskDetail | null> {
+    const { data, error } = await supabase
+        .from('user_tasks')
+        .select('id, title, duration, status, completed_at, template:task_templates(details, link, needs, steps)')
+        .eq('id', id)
+        .maybeSingle()
+
+    if (error) throw error
+    if (!data) return null
+
+    const t: any = (data as any).template ?? {}
+    return {
+        id: data.id,
+        title: data.title,
+        duration: data.duration,
+        status: data.status as TaskStatus,
+        completedAt: data.completed_at,
+        href: `/task/${data.id}` as Href,
+        details: t.details ?? null,
+        link: t.link ?? null,
+        needs: t.needs ?? [],
+        steps: t.steps ?? [],
+    }
+}
+
+export async function setTaskStatus(id: string, status: TaskStatus) {
+    const { error } = await supabase
+        .from('user_tasks')
+        .update({ status, completed_at: status === 'done' ? new Date().toISOString() : null })
+        .eq('id', id)
+    if (error) throw error
+}
