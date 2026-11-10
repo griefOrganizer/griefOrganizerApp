@@ -41,3 +41,43 @@ export async function disconnectEmail() {
     const { error } = await supabase.functions.invoke('gmail-disconnect')
     if (error) throw error
 }
+
+export type FindingCategory =
+    'bank' | 'credit_card' | 'investment' | 'insurance' | 'utility' | 'phone_internet' | 'subscription'
+
+export type Finding = {
+    id: string
+    name: string
+    sender_domain: string
+    category: FindingCategory
+    email_count: number
+    last_seen: string | null
+    status: 'new' | 'kept' | 'dismissed'
+}
+
+export type ScanResult =
+    | { ok: true; findings: Finding[] }
+    | { ok: false; reason: 'not_connected' | 'reconnect' | 'error' }
+
+// Runs a fresh scan on the server
+export async function scanGmail(): Promise<ScanResult> {
+    const { data, error } = await supabase.functions.invoke('gmail-scan')
+    if (error || !data) return { ok: false, reason: 'error' }
+    return data as ScanResult
+}
+
+// Results from the last scan (no Gmail call, so it's instant)
+export async function getFindings(): Promise<Finding[]> {
+    const { data, error } = await supabase
+        .from('email_findings')
+        .select('id, name, sender_domain, category, email_count, last_seen, status')
+        .neq('status', 'dismissed')
+        .order('email_count', { ascending: false })
+    if (error) throw error
+    return (data ?? []) as Finding[]
+}
+
+export async function dismissFinding(id: string) {
+    const { error } = await supabase.from('email_findings').update({ status: 'dismissed' }).eq('id', id)
+    if (error) throw error
+}
