@@ -1,64 +1,25 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { classifyEmail, KNOWN, type Extracted } from '../../classify.ts'
 
-type Category = 'bank' | 'credit_card' | 'investment' | 'insurance' | 'utility' | 'phone_internet' | 'subscription'
-
-// Senders we recognize. Add more anytime: the key is the sender's website.
-const KNOWN: Record<string, { name: string; category: Category }> = {
-    'chase.com': { name: 'Chase', category: 'bank' },
-    'bankofamerica.com': { name: 'Bank of America', category: 'bank' },
-    'wellsfargo.com': { name: 'Wells Fargo', category: 'bank' },
-    'citi.com': { name: 'Citi', category: 'bank' },
-    'capitalone.com': { name: 'Capital One', category: 'bank' },
-    'usbank.com': { name: 'U.S. Bank', category: 'bank' },
-    'pnc.com': { name: 'PNC', category: 'bank' },
-    'ally.com': { name: 'Ally Bank', category: 'bank' },
-    'americanexpress.com': { name: 'American Express', category: 'credit_card' },
-    'discover.com': { name: 'Discover', category: 'credit_card' },
-    'fidelity.com': { name: 'Fidelity', category: 'investment' },
-    'vanguard.com': { name: 'Vanguard', category: 'investment' },
-    'schwab.com': { name: 'Charles Schwab', category: 'investment' },
-    'robinhood.com': { name: 'Robinhood', category: 'investment' },
-    'statefarm.com': { name: 'State Farm', category: 'insurance' },
-    'geico.com': { name: 'GEICO', category: 'insurance' },
-    'progressive.com': { name: 'Progressive', category: 'insurance' },
-    'allstate.com': { name: 'Allstate', category: 'insurance' },
-    'libertymutual.com': { name: 'Liberty Mutual', category: 'insurance' },
-    'dteenergy.com': { name: 'DTE Energy', category: 'utility' },
-    'consumersenergy.com': { name: 'Consumers Energy', category: 'utility' },
-    'comcast.net': { name: 'Xfinity', category: 'phone_internet' },
-    'xfinity.com': { name: 'Xfinity', category: 'phone_internet' },
-    'att.com': { name: 'AT&T', category: 'phone_internet' },
-    'verizon.com': { name: 'Verizon', category: 'phone_internet' },
-    't-mobile.com': { name: 'T-Mobile', category: 'phone_internet' },
-    'spectrum.com': { name: 'Spectrum', category: 'phone_internet' },
-    'netflix.com': { name: 'Netflix', category: 'subscription' },
-    'spotify.com': { name: 'Spotify', category: 'subscription' },
-    'hulu.com': { name: 'Hulu', category: 'subscription' },
-    'disneyplus.com': { name: 'Disney+', category: 'subscription' },
-    'max.com': { name: 'Max', category: 'subscription' },
-    'peacocktv.com': { name: 'Peacock', category: 'subscription' },
-    'paramountplus.com': { name: 'Paramount+', category: 'subscription' },
-    'Northfield': { name: 'Northfield Credit Union', category: 'credit_card' }, // !!! test
-    'Cardinal': { name: 'Cardinal Wireless', category: 'phone_internet' }, // !!! test
-    'Evergreen': { name: 'Evergreen Life Insurance', category: 'insurance' }, // !!! test
-
-}
-
-// Searches use the same syntax as the Gmail search bar
+// ---------- What to look at ----------
 const RECENT = 'newer_than:2y'
-const SEARCHES: { category: Category; q: string }[] = [
-    { category: 'bank',         q: `subject:(statement OR "account alert" OR "direct deposit") ${RECENT}` },
-    { category: 'utility',      q: `subject:("amount due" OR "payment due" OR "your bill") ${RECENT}` },
-    { category: 'insurance',    q: `subject:(premium OR "policy renewal" OR "insurance policy") ${RECENT}` },
-    { category: 'subscription', q: `subject:(subscription OR membership OR "renews on") ${RECENT}` },
-    // Plus one search per group of known senders
+const SEARCHES = [
+    // Anything that looks like an account, bill, statement, membership or prescription
+    {
+        q: `${RECENT} (statement OR bill OR invoice OR "amount due" OR "payment due" OR subscription OR ` +
+            `membership OR renewal OR renews OR premium OR policy OR "account ending" OR "ending in" OR "account #" OR ` +
+            `rent OR lease OR mortgage OR pharmacy OR prescription OR refill OR gym OR yoga OR fitness)`,
+        max: 150,
+    },
+    // Companies we already recognize (finds accounts even when the only emails are marketing)
     ...chunk(Object.keys(KNOWN), 12).map((domains) => ({
-        category: 'bank' as Category,   // placeholder; known senders get their real category below
-        q: `from:(${domains.join(' OR ')}) ${RECENT}`,
+        q: `${RECENT} from:(${domains.join(' OR ')})`,
+        max: 50,
     })),
+    // Recent personal emails, to find people the user is in touch with
+    { q: 'newer_than:6m category:primary', max: 30 },
 ]
-
-const PER_SEARCH = 25   // messages looked at per search, to keep scans quick
+const MAX_BODY_CHARS = 6000   // enough to find account numbers without processing huge newsletters
 
 Deno.serve(async (req) => {
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
@@ -70,13 +31,12 @@ Deno.serve(async (req) => {
 
     // 2. Their saved Gmail connection
     const { data: conn } = await admin
-        .from('email_connections').select('refresh_token').eq('user_id', user.id).maybeSingle()
+        .from('email_connections').select('refresh_token, email').eq('user_id', user.id).maybeSingle()
     if (!conn) return json({ ok: false, reason: 'not_connected' })
 
-    // 3. Swap the refresh token for a short-lived access token
+    // 3. Refresh token -> short-lived access token
     const access = await getAccessToken(conn.refresh_token)
     if (!access) {
-        // Expired (7 days in testing mode) or revoked: clear it so the app asks them to reconnect
         await admin.from('email_connections').delete().eq('user_id', user.id)
         return json({ ok: false, reason: 'reconnect' })
     }
@@ -84,73 +44,105 @@ Deno.serve(async (req) => {
         fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`, { headers: { Authorization: `Bearer ${access}` } })
 
     try {
-        // 4. Run the searches and collect message IDs (with a category hint for each)
-        const hints = new Map<string, Category>()
+        // 4. Collect message IDs from every search (no duplicates)
+        const ids = new Set<string>()
         for (const s of SEARCHES) {
-            const res = await gmail(`messages?maxResults=${PER_SEARCH}&q=${encodeURIComponent(s.q)}`)
+            const res = await gmail(`messages?maxResults=${s.max}&q=${encodeURIComponent(s.q)}`)
             if (!res.ok) throw new Error(`search failed: ${res.status}`)
             const body = await res.json()
-            for (const m of body.messages ?? []) if (!hints.has(m.id)) hints.set(m.id, s.category)
+            for (const m of body.messages ?? []) ids.add(m.id)
         }
 
-        // 5. Read only the "From" line of each message, 10 at a time
-        const found = new Map<string, { name: string; category: Category; count: number; last: number; known: boolean }>()
-        const ids = [...hints.keys()]
-        for (const batch of chunk(ids, 10)) {
-            const results = await Promise.all(batch.map(async (id) => {
-                const res = await gmail(`messages/${id}?format=metadata&metadataHeaders=From`)
-                return res.ok ? { id, msg: await res.json() } : null
+        // 5. Read each email, classify it, and pull out the details. Only the results are kept.
+        type Found = { result: Extracted; fromEmail: string; count: number; last: number; detailsFrom: number }
+        const found = new Map<string, Found>()
+
+        for (const batch of chunk([...ids], 10)) {
+            const messages = await Promise.all(batch.map(async (id) => {
+                const res = await gmail(`messages/${id}?format=full`)
+                return res.ok ? await res.json() : null
             }))
-            for (const r of results) {
-                if (!r) continue
-                const from: string = r.msg.payload?.headers?.find((h: any) => h.name === 'From')?.value ?? ''
-                const address = from.match(/[\w.+-]+@[\w.-]+/)?.[0]
-                if (!address) continue
 
-                const domain = baseDomain(address.split('@')[1])
-                const known = KNOWN[domain]
-                const displayName = from.split('<')[0].replace(/"/g, '').trim()
-                const when = Number(r.msg.internalDate ?? 0)
+            for (const msg of messages) {
+                if (!msg) continue
+                const headers = msg.payload?.headers ?? []
+                const header = (name: string) => headers.find((h: any) => h.name.toLowerCase() === name)?.value ?? ''
+                const from = header('from')
+                const fromEmail = (from.match(/[\w.+-]+@[\w.-]+/)?.[0] ?? '').toLowerCase()
+                const fromName = from.split('<')[0].replace(/"/g, '').trim()
+                const when = Number(msg.internalDate ?? 0)
 
-                const entry = found.get(domain) ?? {
-                    name: known?.name ?? (displayName || domain),
-                    category: known?.category ?? hints.get(r.id)!,
-                    count: 0,
-                    last: 0,
-                    known: !!known,
+                const result = classifyEmail({
+                    subject: header('subject'),
+                    body: (getBodyText(msg.payload) || msg.snippet || '').slice(0, MAX_BODY_CHARS),
+                    fromName,
+                    fromEmail,
+                    date: new Date(when).toISOString(),
+                    labels: msg.labelIds ?? [],                      // which Gmail tab (Primary, Promotions...)
+                    listUnsubscribe: !!header('list-unsubscribe'),   // mass email has this header
+                    precedence: header('precedence'),
+                    userEmail: conn.email,                           // skip emails they sent themselves
+                })
+                if (!result) continue   // shipping notices, ads, etc.
+
+                // Group the same account together: same category + company + last 4
+                const key = result.category === 'personal'
+                    ? `personal|${fromEmail}`
+                    : `${result.category}|${result.organization.toLowerCase()}|${result.accountLast4 ?? ''}`
+
+                const entry = found.get(key)
+                if (!entry) {
+                    found.set(key, { result, fromEmail, count: 1, last: when, detailsFrom: when })
+                } else {
+                    entry.count++
+                    entry.last = Math.max(entry.last, when)
+                    if (when > entry.detailsFrom) {        // keep details from the newest email
+                        entry.result = { ...result, accountLast4: result.accountLast4 ?? entry.result.accountLast4 }
+                        entry.detailsFrom = when
+                    }
                 }
-                entry.count++
-                entry.last = Math.max(entry.last, when)
-                found.set(domain, entry)
             }
         }
 
-        // 6. Keep known senders, plus unknown ones that showed up at least twice (cuts down on noise)
-        const rows = [...found.entries()]
-            .filter(([, f]) => f.known || f.count >= 2)
-            .map(([domain, f]) => ({
-                user_id: user.id,
-                sender_domain: domain,
-                name: f.name,
-                category: f.category,
-                email_count: f.count,
-                last_seen: f.last ? new Date(f.last).toISOString() : null,
-                // no "status" here, so a finding the user dismissed stays dismissed
-            }))
+        // 6. Merge "Venmo" (no account number) into "Venmo ending 7495" when it's the only Venmo account found,
+        //    so one company doesn't show up as several cards
+        for (const [key, f] of [...found.entries()]) {
+            if (f.result.accountLast4 || f.result.category === 'personal') continue
+            const siblings = [...found.entries()].filter(([k, g]) =>
+                k !== key && k.startsWith(key) && g.result.accountLast4)   // same category + company, with a number
+            if (siblings.length === 1) {
+                const [, target] = siblings[0]
+                target.count += f.count
+                target.last = Math.max(target.last, f.last)
+                found.delete(key)
+            }
+        }
 
-        // 7. Save
+        // 7. Save: one row per account (or per person)
+        const rows = [...found.entries()].map(([key, f]) => ({
+            user_id: user.id,
+            finding_key: key,
+            name: f.result.organization,
+            category: f.result.category,
+            account_last4: f.result.accountLast4,
+            details: f.result.details,
+            sender_domain: f.fromEmail.split('@')[1] ?? null,
+            email_count: f.count,
+            last_seen: f.last ? new Date(f.last).toISOString() : null,
+            // no "status" here, so anything the user hid stays hidden
+        }))
         if (rows.length) {
-            const { error } = await admin.from('email_findings').upsert(rows, { onConflict: 'user_id,sender_domain' })
+            const { error } = await admin.from('email_findings').upsert(rows, { onConflict: 'user_id,finding_key' })
             if (error) throw error
         }
         await admin.from('email_connections').update({ last_scanned_at: new Date().toISOString() }).eq('user_id', user.id)
 
         const { data: findings } = await admin
             .from('email_findings')
-            .select('id, name, sender_domain, category, email_count, last_seen, status')
+            .select('id, name, category, account_last4, details, email_count, last_seen, status')
             .eq('user_id', user.id)
             .neq('status', 'dismissed')
-            .order('email_count', { ascending: false })
+            .order('last_seen', { ascending: false })
 
         return json({ ok: true, findings: findings ?? [] })
     } catch (e) {
@@ -158,6 +150,35 @@ Deno.serve(async (req) => {
         return json({ ok: false, reason: 'error' })
     }
 })
+
+// ---------- Helpers ----------
+
+// Gmail sends email bodies in pieces ("parts"), base64-encoded. Prefer plain text; fall back to HTML with tags removed.
+function getBodyText(payload: any): string {
+    let plain = ''
+    let html = ''
+    const walk = (part: any) => {
+        if (!part) return
+        const data = part.body?.data
+        if (data && part.mimeType === 'text/plain' && !plain) plain = decode(data)
+        if (data && part.mimeType === 'text/html' && !html) html = decode(data)
+        for (const child of part.parts ?? []) walk(child)
+    }
+    walk(payload)
+    if (plain) return plain
+    return html
+        .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
+        .replace(/<br\s*\/?>|<\/p>|<\/div>|<\/tr>/gi, '\n')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#36;/g, '$')
+        .replace(/[ \t]+/g, ' ')
+}
+
+function decode(base64url: string): string {
+    const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/')
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+    return new TextDecoder().decode(bytes)
+}
 
 async function getAccessToken(refreshToken: string): Promise<string | null> {
     const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -171,13 +192,7 @@ async function getAccessToken(refreshToken: string): Promise<string | null> {
         }),
     })
     if (!res.ok) return null
-    const body = await res.json()
-    return body.access_token ?? null
-}
-
-// "alerts.chase.com" -> "chase.com"
-function baseDomain(host: string) {
-    return host.toLowerCase().split('.').slice(-2).join('.')
+    return (await res.json()).access_token ?? null
 }
 
 function chunk<T>(list: T[], size: number): T[][] {

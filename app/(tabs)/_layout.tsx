@@ -47,7 +47,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="inbox"
+        name="emailData"
         options={{
           tabBarAccessibilityLabel: 'Messages',
           tabBarIcon: ({ color }) => <Mail size={45} color={color} strokeWidth={1.75} />,

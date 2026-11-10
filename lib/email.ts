@@ -3,7 +3,7 @@ import * as Linking from 'expo-linking'
 import { supabase } from './supabase'
 
 // supabase.functions.invoke attaches the signed in user's login token
-    // the login token is how gmail-auth-url knows who's asking specifically
+// the login token is how gmail-auth-url knows who's asking specifically
 // openAuthSessionAsync opens *secure* system browser instead of a loose web view inside the app
 // this is why we never see the password because google also blocks signins inside app web views
 
@@ -43,13 +43,24 @@ export async function disconnectEmail() {
 }
 
 export type FindingCategory =
-    'bank' | 'credit_card' | 'investment' | 'insurance' | 'utility' | 'phone_internet' | 'subscription'
+    'bank' | 'credit_card' | 'investment' | 'retirement' | 'insurance' | 'housing' |
+    'utility' | 'phone_internet' | 'subscription' | 'membership' | 'online_account' |
+    'health' | 'other_bill' | 'personal'
 
 export type Finding = {
     id: string
     name: string
-    sender_domain: string
     category: FindingCategory
+    account_last4: string | null
+    details: {
+        type?: string
+        amountDue?: number
+        balance?: number
+        premium?: number
+        charge?: number
+        dueDate?: string
+        renewalDate?: string
+    }
     email_count: number
     last_seen: string | null
     status: 'new' | 'kept' | 'dismissed'
@@ -70,9 +81,9 @@ export async function scanGmail(): Promise<ScanResult> {
 export async function getFindings(): Promise<Finding[]> {
     const { data, error } = await supabase
         .from('email_findings')
-        .select('id, name, sender_domain, category, email_count, last_seen, status')
+        .select('id, name, category, account_last4, details, email_count, last_seen, status')
         .neq('status', 'dismissed')
-        .order('email_count', { ascending: false })
+        .order('last_seen', { ascending: false })
     if (error) throw error
     return (data ?? []) as Finding[]
 }
