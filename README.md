@@ -72,3 +72,4 @@ To test it, your Google account has to be added under Google Auth Platform → A
 
 <strong>Troubleshooting</strong>
 *If the app skips sign in then can't save anything:* your phone remembered a login for an account that was deleted. Reload the app and it should send you to sign in after that.
+*If something has gone wrong connecting email and you receive 400 from gmail-auth-url:* make sure you're not testing with somewhere other than Expo Go. For example, make sure you're not using a development built (exp+grieforganizer://…), you're not in tunnel mode (exps://…), or you're not using the web preview (http://localhost…).
