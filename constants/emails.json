@@ -1,0 +1,258 @@
+{
+    "source": "Gmail inbox list view (pasted HTML)",
+    "filter": "sender name = Catherine Fan",
+    "note": "Body text is the inbox preview snippet only; snippets marked truncated were cut off in the list view.",
+    "count": 14,
+    "emails": [
+        {
+            "classification": "checking_account (banking)",
+            "thread_id": "1a1c1ca06dcad735",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Your Northfield Credit Union statement is available",
+            "date": "2026-11-09T14:30:00-05:00",
+            "read": true,
+            "snippet": "Dear Member, Your October 2026 statement for Checking account ending in 8815 is now available. Ending balance: $2904.16 Statement period: October 1 - October 31, 2026 Log in to view your full statement",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Northfield Credit Union",
+                "type": "bank statement",
+                "account_last4": "8815",
+                "ending_balance": 2904.16,
+                "statement_period": "2026-10-01 to 2026-10-31"
+            }
+        },
+        {
+            "classification": "credit_card",
+            "thread_id": "1a1c1c95259be850",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan@umich.edu",
+            "subject": "Your Summit Rewards Card statement is ready",
+            "date": "2026-11-09T14:29:00-05:00",
+            "read": false,
+            "snippet": "Hello Jane Smith, Your new Summit Rewards Card statement is ready. Card ending in 6620 New balance: $418.55 Minimum payment due: $35.00 Payment due date: December 3, 2026 Summit Card Services",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Summit Card Services",
+                "type": "credit card statement",
+                "account_last4": "6620",
+                "new_balance": 418.55,
+                "minimum_payment": 35.00,
+                "due_date": "2026-12-03"
+            }
+        },
+        {
+            "classification": "subscription",
+            "thread_id": "1a1c1c773f30fcd5",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Receipt: your StreamBox monthly subscription",
+            "date": "2026-11-09T14:27:00-05:00",
+            "read": true,
+            "snippet": "Thanks for being a member! StreamBox Premium Billed: November 4, 2026 Amount: $15.99 Next billing date: December 4, 2026 Payment method: card ending in 6620 Manage or cancel your membership in your",
+            "snippet_truncated": true,
+            "details": {
+                "organization": "StreamBox",
+                "type": "subscription receipt",
+                "plan": "StreamBox Premium",
+                "amount": 15.99,
+                "billed_date": "2026-11-04",
+                "next_billing_date": "2026-12-04",
+                "payment_card_last4": "6620"
+            }
+        },
+        {
+            "classification": "membership (subscription)",
+            "thread_id": "1a1c1c690f350c93",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan@umich.edu",
+            "subject": "Your PeakFit membership renewal",
+            "date": "2026-11-09T14:26:00-05:00",
+            "read": true,
+            "snippet": "Hi Jane, Your PeakFit monthly membership renews on November 15, 2026. Amount: $29.00 Membership ID: ending in 7718 To make changes or cancel, visit any PeakFit front desk or your online account.",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "PeakFit",
+                "type": "membership renewal",
+                "account_last4": "7718",
+                "amount": 29.00,
+                "renewal_date": "2026-11-15"
+            }
+        },
+        {
+            "classification": "phone_internet",
+            "thread_id": "1a1c1c5b7d80353f",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Your Cardinal Wireless bill for November",
+            "date": "2026-11-09T14:25:00-05:00",
+            "read": false,
+            "snippet": "Hi Jane Smith, Your Cardinal Wireless bill is ready. Amount due: $88.40 Due date: November 30, 2026 Account ending in 5503 Lines on plan: 2 Autopay is not turned on for this account. Cardinal Wireless",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Cardinal Wireless",
+                "type": "bill",
+                "account_last4": "5503",
+                "amount_due": 88.40,
+                "due_date": "2026-11-30",
+                "lines_on_plan": 2,
+                "autopay": false
+            }
+        },
+        {
+            "classification": "insurance",
+            "thread_id": "1a1c1c4bf526d225",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan@umich.edu",
+            "subject": "Important information about your Evergreen Life policy",
+            "date": "2026-11-09T14:24:00-05:00",
+            "read": false,
+            "snippet": "Dear Policyholder, This is a notice about your Evergreen Life Insurance policy ending in 2290. Premium: $54.10 per month Next premium due: December 1, 2026 Poli",
+            "snippet_truncated": true,
+            "details": {
+                "organization": "Evergreen Life Insurance",
+                "type": "insurance notice",
+                "account_last4": "2290",
+                "premium_monthly": 54.10,
+                "next_premium_due": "2026-12-01"
+            }
+        },
+        {
+            "classification": "insurance",
+            "thread_id": "1a1c1c33eafea432",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Your Michigan Municipal Retirement quarterly statement",
+            "date": "2026-11-09T14:22:00-05:00",
+            "read": false,
+            "snippet": "Dear Member, Your third quarter 2026 retirement statement is available. Member ID: ending in 1184 Account balance: $61,730.22 Statement date: September 30, 2026",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Michigan Municipal Retirement",
+                "type": "retirement statement",
+                "account_last4": "1184",
+                "account_balance": 61730.22,
+                "statement_date": "2026-09-30"
+            }
+        },
+        {
+            "classification": "n/a",
+            "thread_id": "1a1c1c228a5939ac",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Your package has shipped",
+            "date": "2026-11-09T14:21:00-05:00",
+            "read": false,
+            "snippet": "Good news! Your order #48213 from Pinecone Home Goods is on the way. Estimated delivery: November 14.",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Pinecone Home Goods",
+                "type": "shipping notification",
+                "order_number": "48213",
+                "estimated_delivery": "2026-11-14"
+            }
+        },
+        {
+            "classification": "person of interest",
+            "thread_id": "1a1c1c1b63be7502",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan@umich.edu",
+            "subject": "Dinner Saturday?",
+            "date": "2026-11-09T14:21:00-05:00",
+            "read": false,
+            "snippet": "Hey, are you free Saturday around 6? Thinking about trying that new pizza place downtown. Let me know!",
+            "snippet_truncated": false,
+            "details": {
+                "organization": null,
+                "type": "personal"
+            }
+        },
+        {
+            "classification": "internet",
+            "thread_id": "1a1c1bd1cc2cde0d",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan@umich.edu",
+            "subject": "Your BrightLine Internet invoice",
+            "date": "2026-11-09T14:15:00-05:00",
+            "read": false,
+            "snippet": "Hi Jane, Your latest BrightLine Internet invoice totals $59.99. Account ending in 9046. Please see your online account for payment details. BrightLine Internet",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "BrightLine Internet",
+                "type": "bill",
+                "account_last4": "9046",
+                "amount_due": 59.99
+            }
+        },
+        {
+            "classification": "insurance",
+            "thread_id": "1a1c1bbd53d22ee4",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Fwd: Insurance renewal for the car",
+            "date": "2026-11-09T14:14:00-05:00",
+            "read": false,
+            "snippet": "---------- Forwarded message --------- From: Harborview Auto Insurance Subject: Your auto policy renews soon Your auto policy ending in 3317 renews on January 12, 2027. The 6-month premium is $612.00.",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Harborview Auto Insurance",
+                "type": "insurance renewal (forwarded)",
+                "account_last4": "3317",
+                "premium_6_month": 612.00,
+                "renewal_date": "2027-01-12"
+            }
+        },
+        {
+            "classification": "n/a",
+            "thread_id": "1a1c1b98d56b3d89",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Your weekly deals from Cobalt Outfitters",
+            "date": "2026-11-09T14:12:00-05:00",
+            "read": false,
+            "snippet": "This week only: 30% off winter jackets and boots. Shop now before the sale ends Sunday!",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Cobalt Outfitters",
+                "type": "promotion"
+            }
+        },
+        {
+            "classification": "utility",
+            "thread_id": "1a1c1b79e840fb1f",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Great Lakes Gas: payment reminder",
+            "date": "2026-11-09T14:09:00-05:00",
+            "read": false,
+            "snippet": "Hi Jane, This is a reminder that your Great Lakes Gas payment of $67.20 is due on November 28, 2026. Account ending in 3092. If you have already paid, please disregard this message. Great Lakes Gas",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Great Lakes Gas",
+                "type": "payment reminder",
+                "account_last4": "3092",
+                "amount_due": 67.20,
+                "due_date": "2026-11-28"
+            }
+        },
+        {
+            "classification": "utility",
+            "thread_id": "1a1c1b2e07d4a323",
+            "from_name": "Catherine Fan",
+            "from_email": "cathyfan03@gmail.com",
+            "subject": "Your Lakeshore Electric bill is ready",
+            "date": "2026-11-09T14:04:00-05:00",
+            "read": false,
+            "snippet": "Hello Jane Smith, Your Lakeshore Electric statement for October 2026 is ready. Account number: ending in 4471 Amount due: $142.38 Due date: November 25, 2026 Service address: 218 Maple Court, Ann Arbor",
+            "snippet_truncated": false,
+            "details": {
+                "organization": "Lakeshore Electric",
+                "type": "bill",
+                "account_last4": "4471",
+                "amount_due": 142.38,
+                "due_date": "2026-11-25",
+                "service_address": "218 Maple Court, Ann Arbor"
+            }
+        }
+    ]
+}
