@@ -16,11 +16,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primaryDark,
         tabBarInactiveTintColor: colors.tabInactive,
         tabBarStyle: {
-          backgroundColor: colors.primary,
+          backgroundColor: `${colors.primary}90`, // opacity
           borderTopWidth: 0,
           // height: 72 + insets.bottom,      // room for the home indicator on newer iPhones
           // paddingTop: 12,
-          height: 60 + insets.bottom,      // room for the home indicator on newer iPhones
+          height: 60 + insets.bottom,         // room for the home indicator on newer iPhones
           paddingTop: 25,
           paddingBottom: insets.bottom,
           // soft shadow above the bar

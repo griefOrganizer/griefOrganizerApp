@@ -59,7 +59,7 @@ function DetailCard({ label, value, sub }: { label: string; value: string | null
 export default function ProfileScreen() {
     const router = useRouter()
     const [editing, setEditing] = useState<EditableField | null>(null)
-    const [tab, setTab] = useState<Tab>('connections')
+    const [tab, setTab] = useState<Tab>('details')
     const [profile, setProfile] = useState<Profile | null>(null)
     const [connections, setConnections] = useState<Connection[]>([])
     const [loading, setLoading] = useState(true)
@@ -89,6 +89,7 @@ export default function ProfileScreen() {
         [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') ||
         profile?.email?.split('@')[0] ||
         'Your name'
+    const hasName = !!(profile?.firstName || profile?.lastName)   // name entered --> show email underneath instead of "User since"
     const memberSince = profile
         ? new Date(profile.memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
         : ''
@@ -110,31 +111,33 @@ export default function ProfileScreen() {
             {/* ---------- Fixed header ---------- */}
             <View style={styles.header}>
                 <View style={styles.intro}>
-                    <Text style={type.title}>Your Profile</Text>
-                    <Text style={type.body}>We're here to help you find the next step</Text>
+                    <Text style={styles.title}>Your Profile</Text>
+                    {/* <Text style={type.body}>We're here to help you find the next step</Text> */}
                 </View>
 
                 <View style={styles.userRow}>
-                    <Avatar bg="#B5C6E0" fg={colors.primaryDark} size={84} />
+                    <Avatar bg={colors.primaryMuted} fg={colors.primaryDark} size={84} />
                     <View style={styles.userText}>
                         <Text style={styles.userName}>{fullName}</Text>
-                        {memberSince ? <Text style={styles.userSince}>User since {memberSince}</Text> : null}
+                        {hasName
+                            ? (profile?.email ? <Text style={styles.userSince}>{profile.email}</Text> : null)
+                            : (memberSince ? <Text style={styles.userSince}>User since {memberSince}</Text> : null)}
                     </View>
                 </View>
 
                 <View style={styles.tabs} accessibilityRole="tablist">
-                    {(['connections', 'details'] as Tab[]).map((t) => {
+                    {(['details', 'connections'] as Tab[]).map((t) => {
                         const selected = tab === t
                         return (
                             <Pressable
                                 key={t}
                                 onPress={() => setTab(t)}
-                                style={styles.tab}
+                                style={[styles.tab, selected && styles.tabSelected]}
                                 accessibilityRole="tab"
                                 accessibilityState={{ selected }}
                             >
                                 <Text style={[styles.tabText, selected && styles.tabTextSelected]}>
-                                    {t === 'connections' ? 'Connections' : 'Details'}
+                                    {t === 'details' ? 'Details' : 'Connections'}
                                 </Text>
                             </Pressable>
                         )
@@ -146,27 +149,6 @@ export default function ProfileScreen() {
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                 {error ? <Text style={type.body}>{error}</Text> : null}
                 {loading && <Text style={type.body}>Loading...</Text>}
-
-                {!loading && tab === 'connections' && (
-                    connections.length > 0 ? (
-                        connections.map((c, i) => {
-                            const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
-                            return (
-                                <View key={c.id} style={[styles.card, styles.connectionCard]}>
-                                    <Avatar bg={color.bg} fg={color.fg} />
-                                    <View style={styles.userText}>
-                                        <Text style={styles.connectionName}>{c.name}</Text>
-                                        <Text style={styles.connectionRelation}>{c.relationship}</Text>
-                                    </View>
-                                </View>
-                            )
-                        })
-                    ) : (
-                        <Text style={type.body}>
-                            Family and friends you invite to help will show up here.
-                        </Text>
-                    )
-                )}
 
                 {!loading && tab === 'details' && profile && (
                     <>
@@ -213,14 +195,35 @@ export default function ProfileScreen() {
                             onPress={() => setAddressOpen(true)} last /> */}
 
                         <View style={styles.textButtons}>
-                            <Pressable onPress={connectEmail}  accessibilityRole="button">
+                            <Pressable onPress={connectEmail} style={surfaces.textButton} accessibilityRole="button">
                                 <Text style={styles.connectEmailText}>Connect Email</Text>
                             </Pressable>
-                            <Pressable onPress={signOut} accessibilityRole="button">
+                            <Pressable onPress={signOut} style={surfaces.textButton} accessibilityRole="button">
                                 <Text style={styles.signOutText}>Sign out</Text>
                             </Pressable>
                         </View>
                     </>
+                )}
+
+                {!loading && tab === 'connections' && (
+                    connections.length > 0 ? (
+                        connections.map((c, i) => {
+                            const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
+                            return (
+                                <View key={c.id} style={[styles.card, styles.connectionCard]}>
+                                    <Avatar bg={color.bg} fg={color.fg} />
+                                    <View style={styles.userText}>
+                                        <Text style={styles.connectionName}>{c.name}</Text>
+                                        <Text style={styles.connectionRelation}>{c.relationship}</Text>
+                                    </View>
+                                </View>
+                            )
+                        })
+                    ) : (
+                        <Text style={type.body}>
+                            Family and friends you invite to help will show up here.
+                        </Text>
+                    )
                 )}
             </ScrollView>
             <EditDetailModal field={editing} onClose={() => setEditing(null)} onSaved={load} />
@@ -237,19 +240,37 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
-    header: { paddingHorizontal: space.lg, paddingTop: space.lg, gap: space.lg },
-    intro: { gap: space.sm },
+    // header matches the Tasks and Email screens so the title look doesn't change when switching tabs
+    header: { paddingHorizontal: space.lg, paddingTop: space.md, gap: space.lg },
+    intro: { gap: space.xxs },
+    title: { ...type.title, fontSize: 30, lineHeight: 36 },
 
     userRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
     userText: { flex: 1, gap: 4 },
-    userName: { fontFamily: fonts.bold, fontSize: 22, color: colors.text },
-    userSince: { ...type.body, color: colors.text },
-    avatar: { borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+    userName: type.heading,
+    userSince: { ...type.body, color: colors.textMuted, fontSize:  16 }, // i didn't like how large it was, this is on purpose
+    avatar: { borderRadius: radius.avatar, alignItems: 'center', justifyContent: 'center' },
 
-    tabs: { flexDirection: 'row', justifyContent: 'center', gap: space.xl },
-    tab: { minHeight: 44, justifyContent: 'center', paddingHorizontal: space.sm },
+    // segmented control: white track selected segment filled like the reference design
+    tabs: {
+        flexDirection: 'row',
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+        borderWidth: 1,
+        borderRadius: radius.button,
+        padding: space.xxs,
+        gap: space.xxs,
+    },
+    tab: {
+        flex: 1,
+        minHeight: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: radius.button - space.xxs,   // nests inside the track's corners
+    },
+    tabSelected: { backgroundColor: colors.primaryDark },
     tabText: { fontFamily: fonts.medium, fontSize: 17, color: colors.textMuted },
-    tabTextSelected: { fontFamily: fonts.semibold, color: colors.text, textDecorationLine: 'underline' },
+    tabTextSelected: { fontFamily: fonts.semibold, color: colors.textOnPrimary },
 
     content: { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.xl, gap: space.lg },
     card: { ...surfaces.card },
@@ -262,8 +283,8 @@ const styles = StyleSheet.create({
     detailMissing: { fontFamily: fonts.regular, color: colors.textMuted },
     detailSub: { ...type.body, color: colors.text, marginTop: 4 },
 
-    textButtons: { height: 44, alignItems: 'center', justifyContent: 'center', gap: 20, marginTop: 20 },
+    textButtons: { alignItems: 'center', gap: space.xxs, marginTop: space.sm },
     // textButtonLabel: { fontFamily: fonts.medium, fontSize: 16, color: colors.primary },
     signOutText: { fontFamily: fonts.bold, fontSize: 18, color: colors.error },
-    connectEmailText: { fontFamily: fonts.medium, fontSize: 18, color: colors.primary },
+    connectEmailText: { ...type.link, fontSize: 18 },
 })

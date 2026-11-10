@@ -7,7 +7,6 @@ import {
     TrendingUp, User, Wifi, Zap, type LucideIcon,
 } from 'lucide-react-native'
 import { colors, fonts, space, type, surfaces } from '../../constants/theme'
-import { BackArrow } from '../../components/BackArrow'
 import {
     dismissFinding, getEmailConnection, getFindings, scanGmail,
     type EmailConnection, type Finding, type FindingCategory,
@@ -98,11 +97,9 @@ export default function EmailData() {
 
     return (
         <SafeAreaView style={styles.screen}>
-            <BackArrow />
-
             <View style={styles.intro}>
-                <Text style={type.title}>What we found</Text>
-                <Text style={type.body}>
+                <Text style={styles.title}>What we found</Text>
+                <Text style={styles.body}>
                     {connection ? (
                         <>
                             Accounts and bills from <Text style={styles.blueText}>{connection.email}</Text>. We will never share or sell any of your data.
@@ -220,8 +217,11 @@ export default function EmailData() {
 }
 
 const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: colors.background, paddingHorizontal: space.lg, paddingBottom: space.md, gap: space.lg },
-    intro: { gap: space.md },
+    screen: { flex: 1, backgroundColor: colors.background, paddingHorizontal: space.lg, paddingBottom: space.md, gap: space.md },
+    // header matches the Tasks and Profile screens so the title doesn't jump when switching tabs
+    intro: { paddingTop: space.md, gap: space.xxs },
+    title: { ...type.title, fontSize: 30, lineHeight: 36 },
+    body: { ...type.body, lineHeight: 24 },
     scroll: { flex: 1 },
     list: { gap: space.lg, paddingBottom: space.lg },
     message: { ...type.body, color: colors.primaryDark },
