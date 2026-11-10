@@ -20,5 +20,7 @@ Deno.serve(async (req) => {
     }
     await admin.from('email_connections').delete().eq('user_id', user.id)
 
+    await admin.from('email_findings').delete().eq('user_id', user.id)
+
     return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } })
 })
