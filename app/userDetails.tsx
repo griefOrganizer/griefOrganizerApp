@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ComponentRef } from 'react'
 import { TextBox } from '../components/TextBox'
 import { useRouter } from 'expo-router'
 import { supabase } from '../lib/supabase'
+import { BackArrow } from '../components/BackArrow'
 import {
     digitsOnly, formatPhone, toISODate, fromISODate, MIN_BIRTHDAY,
     validateName, validatePhone, validateBirthday,
@@ -142,6 +143,8 @@ export default function UserDetails() {
             <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
+                    
+                    <BackArrow />
                     <View style={styles.intro}>
                         <Image source={require('../assets/LogoNoBackground.png')} style={styles.logoImage} />
                         <Text style={type.title}>A little about you</Text>
@@ -205,8 +208,9 @@ export default function UserDetails() {
                             autoComplete="tel"
                             textContentType="telephoneNumber"
                             maxLength={14}
-                            returnKeyType="done"
+                            returnKeyType="next"
                             onSubmitEditing={() => setShowDatePicker(true)}
+                            // onSubmitEditing={() => phoneRef.current?.focus()}
                         />
 
                         <Pressable onPress={() => setShowDatePicker(true)} accessibilityRole="button" accessibilityLabel="Choose date of birth">

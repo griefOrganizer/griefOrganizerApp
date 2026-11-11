@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter } from 'expo-router'
 import { Check, CircleCheck } from 'lucide-react-native'
 import { colors, fonts, space, type, surfaces } from '../constants/theme'
 import { BackArrow } from '../components/BackArrow'
+import { supabase } from '../lib/supabase'
 import {
     connectGmail, disconnectEmail, getEmailConnection,
     type ConnectResult, type EmailConnection,
@@ -23,20 +24,30 @@ const MESSAGES: Record<Exclude<ConnectResult, 'success'>, string> = {
     error: 'Something went wrong connecting your email. Please try again.',
 }
 
+// 'loss' | 'preparing' | null, from the signed-in user's profile
+// determines if it says "your loved one's email" or "your email"
+async function getSituation(): Promise<string | null> {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+    const { data } = await supabase.from('profiles').select('situation').eq('id', user.id).maybeSingle()
+    return data?.situation ?? null
+}
+
 export default function ConnectEmail() {
     const router = useRouter()
     const [connection, setConnection] = useState<EmailConnection | null>(null)
     const [checking, setChecking] = useState(true)
     const [busy, setBusy] = useState(false)
     const [message, setMessage] = useState('')
+    const [situation, setSituation] = useState<string | null>(null)
 
-    // Already connected? Check every time the screen opens.
+    // already connected? Check every time the screen opens. Also load the situation so the right header shows.
     useFocusEffect(
         useCallback(() => {
-            getEmailConnection()
-                .then(setConnection)
-                .catch(() => setConnection(null))
-                .finally(() => setChecking(false))
+            Promise.all([
+                getEmailConnection().then(setConnection).catch(() => setConnection(null)),
+                getSituation().then(setSituation).catch(() => setSituation(null)),
+            ]).finally(() => setChecking(false))
         }, [])
     )
 
@@ -117,7 +128,7 @@ export default function ConnectEmail() {
 
             <View style={styles.intro}>
                 <Text style={styles.eyebrow}>Optional</Text>
-                <Text style={type.title}>Connect your email</Text>
+                <Text style={type.title}>{situation === 'loss' ? 'Connect your loved one\'s email' : 'Connect your email'}</Text>
                 <Text style={type.body}> We'll look for bank accounts, bills, and subscriptions so you don't have to dig through years of mail yourself.</Text>
             </View>
 
