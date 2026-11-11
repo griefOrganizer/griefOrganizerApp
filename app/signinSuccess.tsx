@@ -4,7 +4,6 @@ import { StyleSheet, Text, View} from 'react-native'
 import { Button } from '../components/Button'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useRouter } from 'expo-router'
 
 export default function Sympathy() {
   const [name, setName] = useState('')

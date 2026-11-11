@@ -5,6 +5,13 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*'],
+    // supabase/functions are Deno edge functions (npm:/URL imports), not app code
+    ignores: ['dist/*', 'supabase/functions/*'],
+  },
+  {
+    rules: {
+      // HTML-escaping rule; React Native <Text> renders apostrophes in copy as-is
+      'react/no-unescaped-entities': 'off',
+    },
   },
 ]);

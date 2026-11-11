@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { colors, space, type, surfaces, fonts } from '../constants/theme'
+import { colors, space, type, surfaces } from '../constants/theme'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { StyleSheet, Text, View, Image, Animated, Pressable } from 'react-native'
-import { Button } from '../components/Button'
+import { StyleSheet, Text, Image, Animated, Pressable, Platform } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../lib/supabase'
 import { homeRoute } from '../lib/profile'
@@ -19,7 +18,7 @@ export default function Opener() {
             toValue: 1,
             friction: 6,
             tension: 40,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web', // no native animated module on web
         }).start()
     }, [])
 
@@ -28,7 +27,7 @@ export default function Opener() {
         Animated.timing(translateYAnim, {
             toValue: 600, // ove down 600px towards the bottom
             duration: 400,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web', // no native animated module on web
         }).start(async () => {
             // getUser() checks with Supabase, not just the phone's memory
             const { data: { user }, error } = await supabase.auth.getUser()

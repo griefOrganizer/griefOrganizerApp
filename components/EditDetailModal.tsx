@@ -130,7 +130,7 @@ export function EditDetailModal({ field, onClose, onSaved }: Props) {
                         <View style={styles.actions}>
                             {hasValue ? (
                                 <Pressable
-                                    onPress={() => { field.kind === 'date' ? setDate(null) : setText(''); setError('') }}
+                                    onPress={() => { if (field.kind === 'date') setDate(null); else setText(''); setError('') }}
                                     style={styles.clear}
                                     accessibilityRole="button"
                                 >

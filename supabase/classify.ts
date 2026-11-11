@@ -350,7 +350,7 @@ export function classifyEmail(email: EmailInput): Extracted | null {
         labels.some((l) => ['CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL', 'CATEGORY_FORUMS'].includes(l))
 
     const accountLast4 = findAccountLast4(text)
-    const [ignoreScore, ignoreHits] = scoreText(subject, body, IGNORE_WORDS)
+    const [ignoreScore] = scoreText(subject, body, IGNORE_WORDS)
 
     // Score every keyword category
     const scores = {} as Record<Scored, number>

@@ -5,7 +5,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { colors, fonts, space, type, surfaces, layout } from '../constants/theme'
+import { colors, type, surfaces, layout } from '../constants/theme'
 import { TextBox } from '../components/TextBox'
 import { supabase } from '../lib/supabase'
 

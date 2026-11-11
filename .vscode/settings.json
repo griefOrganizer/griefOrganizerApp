@@ -23,5 +23,6 @@
   },
   "json.schemaDownload.trustedDomains": {
     "https://supabase.com/schemas/": true
-  }
+  },
+  "python.terminal.useEnvFile": true
 }
