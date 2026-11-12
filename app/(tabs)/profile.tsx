@@ -5,13 +5,36 @@ import { useFocusEffect, useRouter } from 'expo-router'
 import { User } from 'lucide-react-native'
 import { colors, fonts, radius, space, type, surfaces } from '../../constants/theme'
 import { supabase } from '../../lib/supabase'
-import { getConnections, getMyProfile, type Connection, type Profile } from '../../lib/profile'
+import { getMyProfile, type Profile } from '../../lib/profile'
 import { DetailGroup, DetailRow } from '../../components/DetailGroup'
 import { EditDetailModal, type EditableField } from '../../components/EditDetailModal'
 import { formatPhone, fromISODate } from '../../lib/validation'
 import { AddressModal } from '../../components/AddressModal'
+import { TextBox } from '../../components/TextBox'
+import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown'
 
 type Tab = 'connections' | 'details'
+
+// One row from the my_connections() database function
+type Connection = {
+    id: string
+    relationship: string
+    connected_id: string
+    first_name: string | null
+    last_name: string | null
+    is_deceased: boolean
+}
+
+// One row from the search_profiles() database function
+type SearchResult = {
+    id: string
+    first_name: string | null
+    last_name: string | null
+    is_deceased: boolean
+}
+
+const nameOf = (p: { first_name: string | null; last_name: string | null }) =>
+    [p.first_name, p.last_name].filter(Boolean).join(' ')
 
 // Avatar colors, cycled through for each connection (background, icon)
 const AVATAR_COLORS = [
@@ -66,12 +89,26 @@ export default function ProfileScreen() {
     const [error, setError] = useState('')
     const [addressOpen, setAddressOpen] = useState(false)
 
+    // Name search (shown when there are no connections yet)
+    const [results, setResults] = useState<SearchResult[]>([])
+    const [searching, setSearching] = useState(false)
+    const [picked, setPicked] = useState<SearchResult | null>(null)    // person chosen from the list
+    const [relationship, setRelationship] = useState('')
+    const [connectError, setConnectError] = useState('')
+    const [adding, setAdding] = useState(false)
+
     // Reload whenever the screen comes into view (e.g. after editing details)
     const load = useCallback(async () => {
         try {
-            const [p, c] = await Promise.all([getMyProfile(), getConnections()])
+            // my_connections() returns names even for profiles you don't manage (see connection_search.sql)
+            const [p, { data, error: connectionsError }] = await Promise.all([
+                getMyProfile(),
+                supabase.rpc('my_connections'),
+            ])
+            if (connectionsError) throw connectionsError
+
             setProfile(p)
-            setConnections(c)
+            setConnections((data ?? []) as Connection[])
             setError('')
         } catch {
             setError('We couldn\'t load your profile. Please try again.')
@@ -79,6 +116,42 @@ export default function ProfileScreen() {
             setLoading(false)
         }
     }, [])
+
+    async function searchPeople(text: string) {
+        if (text.trim().length < 2) { setResults([]); return }
+        setSearching(true)
+        const { data, error: searchError } = await supabase.rpc('search_profiles', { q: text })
+        setResults(searchError ? [] : (data ?? []) as SearchResult[])
+        setSearching(false)
+    }
+
+    async function addConnection() {
+        if (!picked || adding) return
+        const rel = relationship.trim()
+        if (!rel) { setConnectError('Please say how you\'re connected, like "mother" or "friend".'); return }
+        if (rel.length > 50) { setConnectError('Please keep this under 50 characters.'); return }
+
+        setAdding(true)
+        setConnectError('')
+        const { data: { user } } = await supabase.auth.getUser()
+        const { error: insertError } = user
+            ? await supabase.from('profile_connections').insert({
+                profile_id: user.id,
+                connected_profile_id: picked.id,
+                relationship: rel,
+            })
+            : { error: new Error('Not signed in') }
+        setAdding(false)
+
+        if (insertError) {
+            setConnectError('We couldn\'t add this connection. Please try again.')
+            return
+        }
+        setPicked(null)
+        setRelationship('')
+        setResults([])
+        load()   // the new connection shows up in the list
+    }
 
     useFocusEffect(useCallback(() => { load() }, [load]))
 
@@ -173,26 +246,12 @@ export default function ProfileScreen() {
                                 onPress={open('secondary_email', 'Secondary email', 'email', profile.secondaryEmail)} last />
                         </DetailGroup>
 
-                        {/* <DetailGroup title="Where you live">
-                            <DetailRow label="County" value={profile.county}
-                                onPress={open('county', 'County', 'place', profile.county)} />
-                            <DetailRow label="State" value={profile.state}
-                                onPress={open('state', 'State', 'place', profile.state)} last />
-                        </DetailGroup> */}
-                        {/* ^^^ without autofill */}
-
                         <DetailGroup title="Where you live">
                             <DetailRow label="County" value={profile.county}
                                 onPress={() => setAddressOpen(true)} />
                             <DetailRow label="State" value={profile.state}
                                 onPress={() => setAddressOpen(true)} last />
                         </DetailGroup>
-
-                        {/* with autofill vvv */}
-                        {/* <DetailRow label="County" value={profile.county}
-                            onPress={() => setAddressOpen(true)} />
-                        <DetailRow label="State" value={profile.state}
-                            onPress={() => setAddressOpen(true)} last /> */}
 
                         <View style={styles.textButtons}>
                             <Pressable onPress={connectEmail} style={surfaces.textButton} accessibilityRole="button">
@@ -206,24 +265,99 @@ export default function ProfileScreen() {
                 )}
 
                 {!loading && tab === 'connections' && (
-                    connections.length > 0 ? (
-                        connections.map((c, i) => {
+                    <>
+                        {connections.length > 0 ? connections.map((c, i) => {
                             const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
                             return (
-                                <View key={c.id} style={[styles.card, styles.connectionCard]}>
+                                <Pressable
+                                    key={c.id}
+                                    style={[styles.card, styles.connectionCard]}
+                                    onPress={() => router.push({ pathname: '/../friendProfile', params: { userId: c.connected_id } })}
+                                    accessibilityRole="button"
+                                >
                                     <Avatar bg={color.bg} fg={color.fg} />
                                     <View style={styles.userText}>
-                                        <Text style={styles.connectionName}>{c.name}</Text>
-                                        <Text style={styles.connectionRelation}>{c.relationship}</Text>
+                                        <Text style={styles.connectionName}>
+                                            {nameOf(c) || 'Name not available'}
+                                        </Text>
+                                        <Text style={styles.connectionRelation}>
+                                            {c.relationship}{c.is_deceased ? ' · Deceased' : ''}
+                                        </Text>
                                     </View>
-                                </View>
+                                </Pressable>
                             )
-                        })
-                    ) : (
-                        <Text style={type.body}>
-                            Family and friends you invite to help will show up here.
-                        </Text>
-                    )
+                        }) : (
+                            <Text style={type.body}>
+                                Family and friends you invite to help will show up here.
+                            </Text>
+                        )}
+
+                        {/* ---------- Search for someone by name ---------- */}
+                        <View style={styles.search}>
+                            <Text style={type.section} accessibilityRole="header">Find someone by name</Text>
+                            <AutocompleteDropdown
+                                dataSet={results.map((r) => ({ id: r.id, title: nameOf(r) }))}
+                                onChangeText={searchPeople}
+                                onSelectItem={(item) => {
+                                    const person = item ? results.find((r) => r.id === item.id) : null
+                                    setPicked(person ?? null)
+                                    setConnectError('')
+                                }}
+                                onClear={() => { setResults([]); setPicked(null) }}
+                                loading={searching}
+                                useFilter={false}           // the database already filters
+                                debounce={300}
+                                direction="down"
+                                clearOnFocus={false}
+                                closeOnBlur
+                                showChevron={false}
+                                emptyResultText="No one found with that name"
+                                textInputProps={{
+                                    placeholder: 'Type a name',
+                                    autoCorrect: false,
+                                    autoCapitalize: 'words',
+                                    placeholderTextColor: colors.textMuted,
+                                    style: styles.searchInput,
+                                }}
+                                inputContainerStyle={styles.searchField}
+                                suggestionsListContainerStyle={styles.searchList}
+                                renderItem={(item) => {
+                                    const person = results.find((r) => r.id === item.id)
+                                    return (
+                                        <View style={styles.searchRow}>
+                                            <Text style={styles.searchName}>{item.title}</Text>
+                                            {person?.is_deceased ? <Text style={type.small}>Deceased</Text> : null}
+                                        </View>
+                                    )
+                                }}
+                            />
+
+                            {/* after picking someone: ask how they're related, then save */}
+                            {picked && (
+                                <View style={styles.searchConfirm}>
+                                    <TextBox
+                                        label={`How is ${nameOf(picked)} connected to you?`}
+                                        value={relationship}
+                                        onChangeText={(v) => { setRelationship(v); setConnectError('') }}
+                                        placeholder="Mother, friend, brother..."
+                                        autoCapitalize="none"
+                                        maxLength={50}
+                                        returnKeyType="done"
+                                        onSubmitEditing={addConnection}
+                                    />
+                                    {connectError ? <Text style={type.error}>{connectError}</Text> : null}
+                                    <Pressable
+                                        onPress={addConnection}
+                                        disabled={adding}
+                                        style={({ pressed }) => [surfaces.button, (pressed || adding) && { opacity: 0.8 }]}
+                                        accessibilityRole="button"
+                                    >
+                                        <Text style={type.button}>{adding ? 'Adding…' : 'Add connection'}</Text>
+                                    </Pressable>
+                                </View>
+                            )}
+                        </View>
+                    </>
                 )}
             </ScrollView>
             <EditDetailModal field={editing} onClose={() => setEditing(null)} onSaved={load} />
@@ -248,7 +382,7 @@ const styles = StyleSheet.create({
     userRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
     userText: { flex: 1, gap: 4 },
     userName: type.heading,
-    userSince: { ...type.body, color: colors.textMuted, fontSize:  16 }, // i didn't like how large it was, this is on purpose
+    userSince: { ...type.body, color: colors.textMuted, fontSize: 16 }, // i didn't like how large it was, this is on purpose
     avatar: { borderRadius: radius.avatar, alignItems: 'center', justifyContent: 'center' },
 
     // segmented control: white track selected segment filled like the reference design
@@ -282,6 +416,20 @@ const styles = StyleSheet.create({
     detailValue: { color: colors.primaryDark },
     detailMissing: { fontFamily: fonts.regular, color: colors.textMuted },
     detailSub: { ...type.body, color: colors.text, marginTop: 4 },
+
+    // name search
+    search: { gap: space.sm },
+    searchField: {
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+        borderWidth: 1,
+        borderRadius: radius.button,
+    },
+    searchInput: { fontFamily: fonts.regular, fontSize: 17, color: colors.text, backgroundColor: colors.surface, borderRadius: radius.button },
+    searchList: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: radius.button },
+    searchRow: { paddingVertical: space.sm, paddingHorizontal: space.md, gap: 2 },
+    searchName: { ...type.label, fontFamily: fonts.medium },
+    searchConfirm: { gap: space.sm, marginTop: space.xs },
 
     textButtons: { alignItems: 'center', gap: space.xxs, marginTop: space.sm },
     // textButtonLabel: { fontFamily: fonts.medium, fontSize: 16, color: colors.primary },
